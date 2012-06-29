@@ -218,6 +218,7 @@ void RootGroupNode::paint(QPainter *painter, const QStyleOptionGraphicsItem *opt
     if (simpleTextItem->boundingRect().width()+40 > l)
         l = simpleTextItem->boundingRect().width()+40;
     painter->drawRect(0, 0, l,h);
+//    painter->drawEllipse(0, 0, l,h);
 
     this->setPos(x1-40, y1-20);
 

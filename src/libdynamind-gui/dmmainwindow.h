@@ -116,6 +116,8 @@ private slots:
     void on_actionZoomReset_activated();
     void on_actionZoomOut_activated();
     void on_actionZoomIn_activated();
+    void on_actionExit_triggered();
+
 signals:
     void updateSplashMessage(QString);
 

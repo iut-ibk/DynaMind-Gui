@@ -249,10 +249,9 @@ void ModelNode::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
             painter->drawText(QPoint(22,35), "Name: " + QString::fromStdString(this->getDMModel()->getName()));
 
         painter->drawText(QPoint(22,15), "Module: " + QString::fromStdString(this->getDMModel()->getClassName()));
-        /*if (this->parentGroup)
-            painter->drawText(QPoint(22,55), "Group: "+ QString::fromStdString(this->parentGroup->getVIBeModel()->getName()));*/
-
-
+/*
+        if (this->parentGroup)
+            painter->drawText(QPoint(22,55), "GRP Group: "+ QString::fromStdString(this->parentGroup->getDMModel()->getName()));*/
     }
 }
 
