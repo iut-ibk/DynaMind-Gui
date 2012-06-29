@@ -559,6 +559,7 @@ void DMMainWindow::on_actionZoomIn_activated(){
     int i= this->tabWidget_4->currentIndex();
     QGraphicsView * view = groupscenes[i]->views()[0];
 
+
     view->scale(1.2, 1.2);
 
 }
@@ -583,4 +584,9 @@ void DMMainWindow::on_actionZoomReset_activated()
 void DMMainWindow::showHelp(string classname) {
     this->helpviewer->show();
     this->helpviewer->showHelpForModule(classname);
+}
+
+void DMMainWindow::on_actionExit_triggered()
+{
+    exit(0);
 }

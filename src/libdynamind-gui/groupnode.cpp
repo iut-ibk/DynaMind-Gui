@@ -37,6 +37,7 @@
 #include <dmporttuple.h>
 #include <dmgroup.h>
 #include <iostream>
+#include <cmath>
 
 
 GroupNode::GroupNode()
@@ -246,13 +247,22 @@ void GroupNode::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
             h = 65;
         this->simpleTextItem->setText("Name:"+ QString::fromStdString(this->getDMModel()->getName())+" " +QString::number(this->zValue()));
         float lold = l;
-        if (simpleTextItem->boundingRect().width()+40 > l)
-            l = simpleTextItem->boundingRect().width()+40;
-        painter->drawRect(0, 0, l,h);
+        if (simpleTextItem->boundingRect().width()+140 > l)
+            l = simpleTextItem->boundingRect().width()+140;
+ //        painter->drawRect(0, 0, l,h);
+        painter->drawEllipse(0, 0, l, h);
+
+        for (int i=0;i<360;i=i+45)
+        {
+            int dx=l/2+int(double(l)/2*cos(3.1416*i/180))-5;
+            int dy=h/2+int(double(h)/2*sin(3.1416*i/180))-5;
+            painter->drawEllipse(dx,dy,10,10);
+        }
+
         if (this->childnodes.size() > 0)
             this->setPos(x1-40, y1-20);
 
-        painter->drawText(QPoint(5,15), "Name:"+ QString::fromStdString(this->getDMModel()->getName())+" " +QString::number(this->zValue()));
+        painter->drawText(QPoint(55,20), "Name:"+ QString::fromStdString(this->getDMModel()->getName())+" " +QString::number(this->zValue()));
 
         if (lold != l)
             RePosFlag = true;
