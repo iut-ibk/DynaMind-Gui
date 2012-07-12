@@ -235,7 +235,7 @@ void GroupNode::setSelected(  bool selected ) {
 
 void GroupNode::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) {
 
-    if (this->visible) {
+    if (this->visible ) {
         recalculateLandH();
         if(this->isSelected()== true) {
             painter->setBrush(Qt::gray);
@@ -252,13 +252,16 @@ void GroupNode::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
  //        painter->drawRect(0, 0, l,h);
         painter->drawEllipse(0, 0, l, h);
 
+
+        // New connections
+        /*
         for (int i=0;i<360;i=i+45)
         {
             int dx=l/2+int(double(l)/2*cos(3.1416*i/180))-5;
             int dy=h/2+int(double(h)/2*sin(3.1416*i/180))-5;
             painter->drawEllipse(dx,dy,10,10);
         }
-
+*/
         if (this->childnodes.size() > 0)
             this->setPos(x1-40, y1-20);
 

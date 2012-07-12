@@ -239,12 +239,12 @@ QRectF RootGroupNode::boundingRect() const {
 }
 void RootGroupNode::addModelNode(ModelNode *m) {
     this->childnodes.push_back(m);
-    DM::Module * m1 = m->getDMModel();
+    //DM::Module * m1 = m->getDMModel();
     m->getDMModel()->setGroup((DM::Group *)this->getDMModel());
     m->setParentGroup(this);
+//    m->paint(0,0);
     this->recalculateLandH();
     this->update();
-
 }
 void RootGroupNode::mouseMoveEvent ( QGraphicsSceneMouseEvent * event )  {
     this->setSelected(true);
