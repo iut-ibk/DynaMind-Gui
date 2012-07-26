@@ -505,6 +505,8 @@ void DMMainWindow::loadGUILinks(std::map<std::string, std::string> UUID_Translat
         for (int i = 0; i < 2; i++) {
             if (i == 1)
                 currentView = currentView_out;
+            if (currentView == 0)
+                continue;
 
             if (currentView->getRootNode()->getDMModel() == l->getOutPort()->getModule()) {
                 outmodule = currentView->getRootNode() ;
@@ -541,7 +543,8 @@ void DMMainWindow::loadGUILinks(std::map<std::string, std::string> UUID_Translat
         if(reveredUUID_Translation.find(inmodule->getDMModel()->getUuid()) == reveredUUID_Translation.end())
             continue;
 
-
+        if (!outmodule || !inmodule)
+            continue;
         GUILink * gui_link  = new GUILink();
 
         gui_link->setOutPort(outmodule->getGUIPort(l->getOutPort()));
