@@ -102,7 +102,6 @@ void DMMainWindow::removeGroupWindows(QString uuid) {
                 groupscenes_tmp[inew++] = pv;
             }
         }
-
     }
     this->groupscenes = groupscenes_tmp;
 }
@@ -142,8 +141,12 @@ void DMMainWindow::addNewGroupWindows(GroupNode * g) {
     if (name.isEmpty()) {
         name = g->getName();
     }
+    if (firstrun)
+      {
     this->groupscenes[this->tabWidget_4->addTab(gv,name)] = newgroup;
-    tabmap[newgroup] = gv;
+        firstrun=false;
+    }
+        tabmap[newgroup] = gv;
 
 }
 
@@ -160,11 +163,13 @@ DMMainWindow::DMMainWindow(QWidget * parent)
 {
 
     setupUi(this);
+    firstrun=true;
     log_updater = new GuiLogSink();
-    DM::Log::init(log_updater,DM::Standard);
+    DM::Log::init(log_updater,DM::Debug);
     running =  false;
     this->setParent(parent);
     DM::PythonEnv *env = DM::PythonEnv::getInstance();
+    env->addPythonPath(QApplication::applicationDirPath().toStdString());
     env->addOverWriteStdCout();
 
     this->simulation = new GUISimulation();
@@ -173,7 +178,7 @@ DMMainWindow::DMMainWindow(QWidget * parent)
     this->simulation->registerRootNode();
     this->simulation->addModulesFromSettings();
     this->helpviewer = new GUIHelpViewer();
-    this->verticalLayout->addWidget(helpviewer);
+    //this->verticalLayout->addWidget(helpviewer);
 
 
     log_widget->connect(log_updater, SIGNAL(newLogLine(QString)), SLOT(appendPlainText(QString)), Qt::QueuedConnection);

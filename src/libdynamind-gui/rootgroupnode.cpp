@@ -217,12 +217,11 @@ void RootGroupNode::paint(QPainter *painter, const QStyleOptionGraphicsItem *opt
     this->simpleTextItem->setText("Name:"+ QString::fromStdString(this->getDMModel()->getName()));
     if (simpleTextItem->boundingRect().width()+40 > l)
         l = simpleTextItem->boundingRect().width()+40;
-    painter->drawRect(0, 0, l,h);
-//    painter->drawEllipse(0, 0, l,h);
+//    painter->drawRect(0, 0, l,h);
 
     this->setPos(x1-40, y1-20);
 
-    painter->drawText(QPoint(5,15), "Name:"+ QString::fromStdString(this->getDMModel()->getName()));
+//    painter->drawText(QPoint(5,15), "Name:"+ QString::fromStdString(this->getDMModel()->getName()));
 
 
     if((RePosFlag) != 0) {
