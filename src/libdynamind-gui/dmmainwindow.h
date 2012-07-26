@@ -86,6 +86,7 @@ private:
     QString currentDocument;
     int counter;
     bool running;
+    bool firstrun;
     QTreeWidgetItem * rootItemModelTree;
     void writeGUIInformation(QString FileName);
     void loadGUIModules(DM::Group * g, std::map<std::string, std::string> UUID_Translation,  QVector<LoadModule> posmodules);

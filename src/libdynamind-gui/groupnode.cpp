@@ -245,7 +245,9 @@ void GroupNode::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
         }
         if (h< 65)
             h = 65;
-        this->simpleTextItem->setText("Name:"+ QString::fromStdString(this->getDMModel()->getName())+" " +QString::number(this->zValue()));
+        //QString name=QString("Name:")+ QString::fromStdString(this->getDMModel()->getName())+" " +QString::number(this->zValue());
+        QString name="Baseline";
+        this->simpleTextItem->setText(name);
         float lold = l;
         if (simpleTextItem->boundingRect().width()+140 > l)
             l = simpleTextItem->boundingRect().width()+140;
@@ -265,7 +267,7 @@ void GroupNode::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
         if (this->childnodes.size() > 0)
             this->setPos(x1-40, y1-20);
 
-        painter->drawText(QPoint(55,20), "Name:"+ QString::fromStdString(this->getDMModel()->getName())+" " +QString::number(this->zValue()));
+        painter->drawText(QPoint(55,20), name);
 
         if (lold != l)
             RePosFlag = true;
