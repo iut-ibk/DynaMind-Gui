@@ -246,7 +246,8 @@ void GroupNode::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
         if (h< 65)
             h = 65;
         //QString name=QString("Name:")+ QString::fromStdString(this->getDMModel()->getName())+" " +QString::number(this->zValue());
-        QString name="Baseline";
+//        QString name="Baseline";
+         QString name=this->getName();
         this->simpleTextItem->setText(name);
         float lold = l;
         if (simpleTextItem->boundingRect().width()+140 > l)
