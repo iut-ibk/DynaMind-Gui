@@ -335,9 +335,7 @@ void ModelNode::mouseDoubleClickEvent ( QGraphicsSceneMouseEvent * event ) {
     }
 }
 void ModelNode::mousePressEvent ( QGraphicsSceneMouseEvent * event ) {
-    /*if(this->minimized){
-        QGraphicsItem::mousePressEvent(event );
-    }*/
+
 }
 
 

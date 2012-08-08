@@ -231,7 +231,7 @@ void DMMainWindow::createModuleListView() {
         foreach(std::string name, names) {
             QTreeWidgetItem * item;
   //          cout << "it-name: ->" << name << "<-" << endl;
-  //          if (name!="P8BaseLine-")
+            if (name=="P8BaseLine")
             {
                 cout << "OK"<<endl;
                 item = new QTreeWidgetItem(items);
@@ -258,7 +258,7 @@ void DMMainWindow::createModuleListView() {
         }
 
         for (std::map<std::string, std::vector<std::string> >::iterator it = mMap.begin(); it != mMap.end(); ++it) {
-//            if (it->first!="P8BaseLine-")
+            if (it->first=="P8BaseLine")
             {
                 QTreeWidgetItem * items = new QTreeWidgetItem(this->treeWidget);
                 std::string name = it->first;
