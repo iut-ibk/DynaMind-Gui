@@ -319,7 +319,7 @@ void ModelNode::mouseDoubleClickEvent ( QGraphicsSceneMouseEvent * event ) {
     }
 }
 void ModelNode::mousePressEvent ( QGraphicsSceneMouseEvent * event ) {
-        QGraphicsItem::mousePressEvent(event );
+
 }
 
 
