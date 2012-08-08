@@ -142,11 +142,11 @@ void DMMainWindow::addNewGroupWindows(GroupNode * g) {
         name = g->getName();
     }
     if (firstrun)
-      {
-    this->groupscenes[this->tabWidget_4->addTab(gv,name)] = newgroup;
+    {
+        this->groupscenes[this->tabWidget_4->addTab(gv,name)] = newgroup;
         firstrun=false;
     }
-        tabmap[newgroup] = gv;
+    tabmap[newgroup] = gv;
 
 }
 
@@ -212,7 +212,13 @@ DMMainWindow::DMMainWindow(QWidget * parent)
 }
 
 void DMMainWindow::createModuleListView() {
+
     this->treeWidget->clear();
+
+
+    //DM::Module predesessor=
+    //std::string
+
     std::list<std::string> mlist = (this->simulation->getModuleRegistry()->getRegisteredModules());
     std::map<std::string, std::vector<std::string> > mMap (this->simulation->getModuleRegistry()->getModuleMap());
     this->treeWidget->setColumnCount(1);
@@ -224,9 +230,14 @@ void DMMainWindow::createModuleListView() {
         std::sort(names.begin(), names.end());
         foreach(std::string name, names) {
             QTreeWidgetItem * item;
-            item = new QTreeWidgetItem(items);
-            item->setText(0,QString::fromStdString(name));
-            item->setText(1,"Module");
+  //          cout << "it-name: ->" << name << "<-" << endl;
+  //          if (name!="P8BaseLine-")
+            {
+                cout << "OK"<<endl;
+                item = new QTreeWidgetItem(items);
+                item->setText(0,QString::fromStdString(name));
+                item->setText(1,"Module");
+            }
         }
     }
 
@@ -247,20 +258,23 @@ void DMMainWindow::createModuleListView() {
         }
 
         for (std::map<std::string, std::vector<std::string> >::iterator it = mMap.begin(); it != mMap.end(); ++it) {
-            QTreeWidgetItem * items = new QTreeWidgetItem(this->treeWidget);
-            std::string name = it->first;
-            items->setText(0, QString::fromStdString(name));
-            std::vector<std::string> names = it->second;
-            std::sort(names.begin(), names.end());
+//            if (it->first!="P8BaseLine-")
+            {
+                QTreeWidgetItem * items = new QTreeWidgetItem(this->treeWidget);
+                std::string name = it->first;
+                items->setText(0, QString::fromStdString(name));
+                std::vector<std::string> names = it->second;
+                std::sort(names.begin(), names.end());
 
-            foreach(std::string name, names) {
-                QTreeWidgetItem * item;
-                item = new QTreeWidgetItem(items);
-                item->setText(0,QString::fromStdString(name));
-                item->setText(1,"VIBe");
-                stringstream filename;
-                filename << moduleshome[0].toStdString() << "/" << name;
-                item->setText(2,QString::fromStdString(filename.str()));
+                foreach(std::string name, names) {
+                    QTreeWidgetItem * item;
+                    item = new QTreeWidgetItem(items);
+                    item->setText(0,QString::fromStdString(name));
+                    item->setText(1,"VIBe");
+                    stringstream filename;
+                    filename << moduleshome[0].toStdString() << "/" << name;
+                    item->setText(2,QString::fromStdString(filename.str()));
+                }
             }
         }
     }
