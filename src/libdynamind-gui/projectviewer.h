@@ -62,6 +62,7 @@ protected:
 
 
 
+
 private:
     DM::ModuleRegistry * moduleregistry;
     //GUISimulation * simulation;

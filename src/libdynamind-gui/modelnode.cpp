@@ -51,6 +51,8 @@
 #include <dmsystem.h>
 #include <sstream>
 #include <guihelpviewer.h>
+#include <dmmainwindow.h>
+
 
 std::string ModelNode::getParameterAsString(std::string name) {
 
@@ -70,6 +72,15 @@ std::string ModelNode::getParameterAsString(std::string name) {
 std::string ModelNode::getGroupUUID() {
     return this->getDMModel()->getGroup()->getUuid();
 }
+
+void ModelNode::setMySelected ( bool selected )
+{
+    exit(0);
+
+    QGraphicsItem::setSelected ( selected );
+    this->ResultWidget->createModuleListView();
+}
+
 
 void ModelNode::updatePorts () {
 
@@ -334,8 +345,11 @@ void ModelNode::mouseDoubleClickEvent ( QGraphicsSceneMouseEvent * event ) {
         }
     }
 }
-void ModelNode::mousePressEvent ( QGraphicsSceneMouseEvent * event ) {
 
+void ModelNode::mouseReleaseEvent ( QGraphicsSceneMouseEvent * event )
+{
+    //cout << this->getDMModel()->getSimulation()->getResultWidget << endl;
+    hwin->createModuleListView();
 }
 
 
@@ -476,4 +490,21 @@ void ModelNode::showHelp() {
     this->simulation->showHelp(this->getDMModel()->getClassName());
 
 
+}
+
+
+void ModelNode::setSuccessors(QStringList list)
+{
+    successors=list;
+}
+
+QStringList ModelNode::getSuccessors()
+{
+    return successors;
+}
+
+bool ModelNode::isSuccessor(QString successor)
+{
+
+    return successors.contains(successor);
 }

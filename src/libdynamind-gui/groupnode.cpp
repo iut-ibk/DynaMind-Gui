@@ -38,6 +38,7 @@
 #include <dmgroup.h>
 #include <iostream>
 #include <cmath>
+#include "dmmainwindow.h"
 
 
 GroupNode::GroupNode()
@@ -219,18 +220,16 @@ void GroupNode::RePosTuplePorts() {
     }
 
 }
-void GroupNode::setSelected(  bool selected ) {
+void GroupNode::setMySelected(  bool selected ) {
     foreach(ModelNode * m, this->childnodes) {
-        m->setSelected(true);
+        m->setMySelected(true);
         if (m->isGroup()) {
             GroupNode * g = (GroupNode *) m;
-            g->setSelected(selected);
+            g->setMySelected(selected);
         }
     }
 
-    QGraphicsItem::setSelected ( selected );
-
-
+    ModelNode::setMySelected(selected);
 }
 
 void GroupNode::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) {
