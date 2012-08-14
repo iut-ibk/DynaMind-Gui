@@ -6,13 +6,16 @@
 #include "dmedge.h"
 #include "dmattribute.h"
 #include "dmsystemiterators.h"
-
+#include <Windows.h>
 #include <GL/gl.h>
 #include <GL/glu.h>
 
 #include <QImage>
 #include <QPainter>
 #include <cassert>
+
+typedef void (APIENTRY *GLU_TESS_CALLBACK)();
+
 
 namespace DM {
 
@@ -133,13 +136,13 @@ struct TesselatedFaceDrawer {
         }
         assert(glGetError() == GL_NO_ERROR);
         GLUtesselator *tess = gluNewTess();
-        gluTessCallback(tess, GLU_TESS_ERROR, (_GLUfuncptr) error_callback);
-        gluTessCallback(tess, GLU_TESS_BEGIN, (_GLUfuncptr) glBegin);
-        gluTessCallback(tess, GLU_TESS_COMBINE_DATA, (_GLUfuncptr) combine_callback);
+        gluTessCallback(tess, GLU_TESS_ERROR, (void (__stdcall*)(void)) error_callback);
+        gluTessCallback(tess, GLU_TESS_BEGIN, (void (__stdcall*)(void)) glBegin);
+        gluTessCallback(tess, GLU_TESS_COMBINE_DATA, (void (__stdcall*)(void)) combine_callback);
         if (glIsTexture(texture)) {
-            gluTessCallback(tess, GLU_TESS_VERTEX, (_GLUfuncptr) texture_callback);
+            gluTessCallback(tess, GLU_TESS_VERTEX, (void (__stdcall*)(void)) texture_callback);
         } else {
-            gluTessCallback(tess, GLU_TESS_VERTEX, (_GLUfuncptr) color_callback);
+            gluTessCallback(tess, GLU_TESS_VERTEX, (void (__stdcall*)(void)) color_callback);
         }
         gluTessCallback(tess, GLU_TESS_END, glEnd);
         

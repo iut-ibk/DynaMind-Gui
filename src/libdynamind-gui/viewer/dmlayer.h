@@ -4,6 +4,7 @@
 #include "dmview.h"
 
 #include <QMap>
+#include <Windows.h>
 #include <GL/gl.h>
 
 #include "dmviewmetadata.h"

@@ -232,11 +232,15 @@ void DMMainWindow::createModuleListView()
     {
         QString name=QString::fromStdString(selectedModule->getDMModel()->getClassName());
         cout << "Selected: " << name.toStdString() << endl;
-        if (name=="P8BaseLine")
-            successors<<"P8Rain";
+        if (name=="P8BaseLine") {
+            successors<<"P8Rain"<<"AppendAttributes";
+        }
+        if (name=="ImportShapeFile") {
+            successors<<"ExportToShapeFile";
+        }
     }
     else
-        successors<<"P8BaseLine";
+        successors<<"P8BaseLine"<<"ExportToShapeFile"<<"ImportShapeFile";
 
     std::list<std::string> mlist = (this->simulation->getModuleRegistry()->getRegisteredModules());
     std::map<std::string, std::vector<std::string> > mMap (this->simulation->getModuleRegistry()->getModuleMap());
