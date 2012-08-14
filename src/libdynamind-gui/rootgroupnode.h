@@ -73,7 +73,7 @@ public:
     void changeGroupID(QString Name);
     void setGroupZValue();
     void removeModelNode(ModelNode *m);
-    void setSelected ( bool selected );
+    void setMySelected ( bool selected );
     virtual void updatePorts();
 
 };

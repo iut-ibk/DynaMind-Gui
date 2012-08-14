@@ -73,13 +73,14 @@ public:
     QTreeWidgetItem * getRootItemModelTree(){return this->rootItemModelTree;}
     GuiLogSink *log_updater;
     GUISimulation * getSimulation() {return this->simulation;}
+    void createModuleListView();
+
 private:
     GUISimulation * simulation;
     SimulationManagment * simmanagment;
     GUISimulationObserver * simobserver;
     GUIHelpViewer * helpviewer;
 
-    void createModuleListView();
     QMap<QString, ModuleDescription> modules;
     QMap<ProjectViewer *, QWidget *> tabmap;
     QMap<int, ProjectViewer * >  groupscenes;
@@ -123,5 +124,7 @@ signals:
     void updateSplashMessage(QString);
 
 };
+
+extern DMMainWindow *hwin;
 
 #endif // MAINWINDOW_H

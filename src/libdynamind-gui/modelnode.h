@@ -81,12 +81,17 @@ protected:
 
     virtual void mouseMoveEvent ( QGraphicsSceneMouseEvent * event ) ;
     virtual void mouseDoubleClickEvent ( QGraphicsSceneMouseEvent * event );
-    virtual void mousePressEvent ( QGraphicsSceneMouseEvent * event );
+    virtual void mouseReleaseEvent ( QGraphicsSceneMouseEvent * event );
     void contextMenuEvent(QGraphicsSceneContextMenuEvent *event);
     GUISimulation * simulation;
     DMMainWindow * ResultWidget;
+    QStringList successors;
 
 public:
+    void setSuccessors(QStringList list);
+    QStringList getSuccessors();
+    bool isSuccessor(QString successor);
+
     QStringList ExistingInPorts;
     QStringList ExistingOutPorts;
     ModelNode(QGraphicsItem * parent = 0, QGraphicsScene * scene = 0);
@@ -130,7 +135,7 @@ public:
 
     virtual void updatePorts();
 
-    virtual void setSelected ( bool selected ){QGraphicsItem::setSelected ( selected );}
+    virtual void setMySelected ( bool selected );
 
     virtual void resetModel();
 

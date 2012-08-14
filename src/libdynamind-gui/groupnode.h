@@ -68,7 +68,7 @@ public:
 
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = 0);
     QRectF boundingRect() const;
-    void setSelected ( bool selected );
+    void setMySelected ( bool selected );
     void RePosTuplePorts();
 
     bool isGroup(){return true;}

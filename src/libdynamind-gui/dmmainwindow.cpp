@@ -208,16 +208,35 @@ DMMainWindow::DMMainWindow(QWidget * parent)
     this->rootItemModelTree->setText(1, "");
     this->rootItemModelTree->setExpanded(true);
 
-
+    hwin=this;
 }
 
-void DMMainWindow::createModuleListView() {
-
+void DMMainWindow::createModuleListView()
+{
     this->treeWidget->clear();
 
+    ModelNode *selectedModule=NULL;
+    int currentIndex = this->tabWidget_4->currentIndex();
+    ProjectViewer * pviewer = groupscenes[currentIndex];
+    QList<QGraphicsItem *> sItems;
+    if (pviewer) {
+        sItems = pviewer->selectedItems();
+        if (sItems.size() > 0) {
+            selectedModule = (ModelNode*) sItems.first();
+        }
+    }
 
-    //DM::Module predesessor=
-    //std::string
+
+    QStringList successors;
+    if (selectedModule!=NULL)
+    {
+        QString name=QString::fromStdString(selectedModule->getDMModel()->getClassName());
+        cout << "Selected: " << name.toStdString() << endl;
+        if (name=="P8BaseLine")
+            successors<<"P8Rain";
+    }
+    else
+        successors<<"P8BaseLine";
 
     std::list<std::string> mlist = (this->simulation->getModuleRegistry()->getRegisteredModules());
     std::map<std::string, std::vector<std::string> > mMap (this->simulation->getModuleRegistry()->getModuleMap());
@@ -228,17 +247,26 @@ void DMMainWindow::createModuleListView() {
         items->setText(0, QString::fromStdString(name));
         std::vector<std::string> names = it->second;
         std::sort(names.begin(), names.end());
+        bool containsSuccessors=false;
         foreach(std::string name, names) {
             QTreeWidgetItem * item;
-  //          cout << "it-name: ->" << name << "<-" << endl;
-            if (name=="P8BaseLine")
+            //          cout << "it-name: ->" << name << "<-" << endl;
+            if (successors.contains(QString::fromStdString(name)))
             {
                 cout << "OK"<<endl;
                 item = new QTreeWidgetItem(items);
                 item->setText(0,QString::fromStdString(name));
                 item->setText(1,"Module");
+                containsSuccessors=true;
             }
         }
+        if (containsSuccessors)
+        {
+            items->setDisabled(false);
+            items->setExpanded(true);
+        }
+        else
+            items->setDisabled(true);
     }
 
     //Add VIBe Modules
@@ -258,7 +286,7 @@ void DMMainWindow::createModuleListView() {
         }
 
         for (std::map<std::string, std::vector<std::string> >::iterator it = mMap.begin(); it != mMap.end(); ++it) {
-            if (it->first=="P8BaseLine")
+            if (successors.contains(QString::fromStdString(it->first)))
             {
                 QTreeWidgetItem * items = new QTreeWidgetItem(this->treeWidget);
                 std::string name = it->first;
@@ -612,3 +640,5 @@ void DMMainWindow::on_actionExit_triggered()
 {
     exit(0);
 }
+
+DMMainWindow *hwin;
