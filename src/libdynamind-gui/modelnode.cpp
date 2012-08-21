@@ -39,7 +39,11 @@
 #include <rootgroupnode.h>
 #include <guisimulation.h>
 #include <dmsystem.h>
+
 #include "viewer/dmviewerwindow.h"
+
+#include <sstream>
+#include <guihelpviewer.h>
 #include <dmmainwindow.h>
 
 
