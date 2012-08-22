@@ -1,3 +1,29 @@
+/**
+ * @file
+ * @author  Gregor Burger <burger.gregor@gmail.com>
+ * @version 1.0
+ * @section LICENSE
+ *
+ * This file is part of DynaMind
+ *
+ * Copyright (C) 2012  Gregor Burger
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ *
+ */
+
 #include "dmlayer.h"
 
 #include "dmcomponent.h"
@@ -6,16 +32,25 @@
 #include "dmedge.h"
 #include "dmattribute.h"
 #include "dmsystemiterators.h"
-#include <Windows.h>
-#include <GL/gl.h>
-#include <GL/glu.h>
+
+#include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
+#include <CGAL/partition_2.h>
+#include <CGAL/Partition_traits_2.h>
+#include <CGAL/Partition_is_valid_traits_2.h>
+
+typedef CGAL::Exact_predicates_inexact_constructions_kernel K;
+typedef CGAL::Partition_traits_2<K>                         Traits;
+typedef CGAL::Is_convex_2<Traits>                           Is_convex_2;
+typedef Traits::Point_2                                     Point_2;
+typedef Traits::Polygon_2                                   Polygon_2;
+typedef std::vector<Polygon_2>                              Polygon_list;
+typedef CGAL::Partition_is_valid_traits_2<Traits, Is_convex_2>
+                                                            Validity_traits;
 
 #include <QImage>
 #include <QPainter>
+#include <QProgressDialog>
 #include <cassert>
-
-typedef void (APIENTRY *GLU_TESS_CALLBACK)();
-
 
 namespace DM {
 
@@ -36,140 +71,123 @@ struct SimpleDrawer {
     }
 };
 
-void error_callback(GLenum e) {
-    const char *error_string = (const char *) gluErrorString(e);
-    int x = 100;
-}
-
-void color_callback(GLdouble *d, void *data) {
-    glColor3f(0.0, 0.0, 0.0);
-    glVertex3dv(d);
-}
-
-void texture_callback(GLdouble *d, void *data) {
-    glColor3f(1, 1, 1);
-    glTexCoord2dv(&d[3]);
-    glVertex3dv(d);
-}
-
-void combine_callback(GLdouble coords[3], 
-                      GLdouble *vertex_data[4],
-                      GLfloat weight[4], GLdouble **dataOut,
-                      void *user_data) {
-    GLuint *texture = (GLuint*) user_data;
-    GLdouble *vertex = new GLdouble[5]; //LEAAAAAK!!!
-    vertex[0] = coords[0];
-    vertex[1] = coords[1];
-    vertex[2] = coords[2];
+struct TesselatedFaceDrawer {
+    double height_scale;
+    double attr_span;
+    const Layer &l;
+    Polygon_2 polygon;
+    double current_height;
+    double current_tex[2];
+    int name_start;
+    QProgressDialog *dialog;
     
-    GLdouble *v1 = vertex_data[0];
-    
-    if (glIsTexture(*texture)) {
-        vertex[3] = v1[3];
-        vertex[4] = v1[4];
+    TesselatedFaceDrawer(const Layer &l, QWidget *parent)
+        : l(l), height_scale(0.0), name_start(l.getNameStart()) {
+        
+        dialog = new QProgressDialog("Tesselating Polygons...", "cancel", 
+                                     0, l.getViewMetaData().number_of_primitives,
+                                     parent);
+        //dialog->setModal(true);
+        dialog->show();
+        
+        if (l.getAttribute() == "") {
+            return;
+        }
+        
+        const ViewMetaData &vmd = l.getViewMetaData();
+        this->attr_span = vmd.attr_max - vmd.attr_min;
+        
+        if (l.getHeightInterpretation() > 0.0) {
+            this->height_scale = 1.0/vmd.attr_max*vmd.radius() * l.getHeightInterpretation();
+        }
     }
     
-    *dataOut = vertex;
-}
-
-struct TesselatedFaceDrawer {
-    std::string attr;
-    double height_scale, attr_span;
-    GLuint texture, name_start;
-    const ViewMetaData &vmd;
-    int attribute_vector_name;
-    
-    std::vector<GLdouble *> vertices;
-    
-    TesselatedFaceDrawer(const ViewMetaData &vmd, GLuint name_start, 
-                         std::string attr = "", double height_scale = -1, 
-                         GLuint texture = -1, int attribute_vector_name = 0)
-        : attr(attr), texture(texture), 
-          vmd(vmd), name_start(name_start), 
-          attribute_vector_name(attribute_vector_name) {
-        
-        this->height_scale = 1.0/vmd.attr_max*vmd.radius()*height_scale;
-        this->attr_span = vmd.attr_max - vmd.attr_min;
+    ~TesselatedFaceDrawer() {
+        delete dialog;
     }
     
     void operator()(DM::System *s, DM::View v, DM::Face *f, DM::Node *n, iterator_pos pos) {
         if (pos == after) {
             render();
+            polygon.clear();
             name_start++;
+            current_height = 0.0;
+            current_tex[0] = current_tex[1] = 0.0;
+            dialog->setValue(dialog->value()+1);
             return;
         }
+        if (pos == before) {
+            if (height_scale > 0) {
+                Attribute *a = f->getAttribute(l.getAttribute());
+                if (a->getType() == Attribute::DOUBLE) {
+                    current_height = f->getAttribute(l.getAttribute())->getDouble() * height_scale;
+                } else {
+                    double attr_value = a->getDoubleVector()[l.getAttributeVectorName()];
+                    current_height = attr_value * height_scale;
+                }
+            }
+            if (glIsTexture(l.getColorInterpretation())) {
+                const ViewMetaData &vmd = l.getViewMetaData();
+                Attribute *a = f->getAttribute(l.getAttribute());
+                if (a->getType() == Attribute::DOUBLE) {
+                    current_tex[0] = (a->getDouble() - vmd.attr_min) / attr_span;
+                } else {
+                    current_tex[0] = (a->getDoubleVector()[l.getAttributeVectorName()] - vmd.attr_min) / attr_span;
+                }
+                current_tex[1] = 0.5;
+            } else {
+                current_tex[0] = current_tex[1] = 0.0;
+            }
+            return;
+        }
+        
         if (pos != in_between) return;
         
-        GLdouble *d = new GLdouble[5];
-        
-        d[0] = n->getX();
-        d[1] = n->getY();
-        d[2] = 0.0;
-        if (height_scale > 0) {
-            Attribute *a = f->getAttribute(attr);
-            if (a->getType() == Attribute::DOUBLE) {
-                d[2] = f->getAttribute(attr)->getDouble() * height_scale;
-            } else {
-                double attr_value = a->getDoubleVector()[attribute_vector_name];
-                d[2] = attr_value * height_scale;
-            }
-        }
-        
-        if (glIsTexture(texture)) {
-            Attribute *a = f->getAttribute(attr);
-            if (a->getType() == Attribute::DOUBLE) {
-                d[3] = (a->getDouble() - vmd.attr_min) / attr_span;
-            } else {
-                d[3] = (a->getDoubleVector()[attribute_vector_name] - vmd.attr_min) / attr_span;
-            }
-            d[4] = 0.5;
-        } else {
-            d[3] = d[4] = 0.0;
-        }
-        vertices.push_back(d);
+        Point_2 p(n->getX(), n->getY());
+        polygon.push_back(p);
     }
     
     void render() {
-        if (glIsTexture(texture)) {
+        if (glIsTexture(l.getColorInterpretation())) {
             glEnable(GL_TEXTURE_2D);
-            glBindTexture(GL_TEXTURE_2D, texture);
+            glBindTexture(GL_TEXTURE_2D, l.getColorInterpretation());
         }
         assert(glGetError() == GL_NO_ERROR);
-        GLUtesselator *tess = gluNewTess();
-        gluTessCallback(tess, GLU_TESS_ERROR, (void (__stdcall*)(void)) error_callback);
-        gluTessCallback(tess, GLU_TESS_BEGIN, (void (__stdcall*)(void)) glBegin);
-        gluTessCallback(tess, GLU_TESS_COMBINE_DATA, (void (__stdcall*)(void)) combine_callback);
-        if (glIsTexture(texture)) {
-            gluTessCallback(tess, GLU_TESS_VERTEX, (void (__stdcall*)(void)) texture_callback);
-        } else {
-            gluTessCallback(tess, GLU_TESS_VERTEX, (void (__stdcall*)(void)) color_callback);
-        }
-        gluTessCallback(tess, GLU_TESS_END, glEnd);
+        if (polygon.is_clockwise_oriented())
+            polygon.reverse_orientation();
+        Polygon_list tesselated;
+        Validity_traits validity_traits;
+        CGAL::greene_approx_convex_partition_2(polygon.vertices_begin(), polygon.vertices_end(),
+                                               std::back_inserter(tesselated), validity_traits);
         
         glPushName(name_start);
-        
-        gluTessBeginPolygon(tess, &this->texture);
-        gluTessBeginContour(tess);
-        
-        foreach(GLdouble *v, vertices) {
-            gluTessVertex(tess, v, v);
+        foreach(Polygon_2 poly, tesselated) {
+#if 1
+            glBegin(GL_POLYGON);
+            
+            foreach(Point_2 p, poly.container()) {
+                if (glIsTexture(l.getColorInterpretation())) {
+                    glColor3f(1.0, 1.0, 1.0);
+                    glTexCoord2dv(current_tex);
+                } else {
+                    glColor3f(0.0, 0.0, 0.0);
+                }
+                glVertex3d(p.x(), p.y(), current_height);
+            }
+#else
+            glBegin(GL_LINE_STRIP);
+            glColor3f(.0f, .0f, .0f);
+            foreach(Point_2 p, poly.container()) {
+                glVertex3d(p.x(), p.y(), 0);
+            }
+            Point_2 first = poly.container().front();
+            glVertex3d(first.x(), first.y(), 0);
+#endif
+            
+            glEnd();
         }
-        
-        gluTessEndContour(tess);
-        gluTessEndPolygon(tess);
-        gluDeleteTess(tess);
-        
         glPopName();
-        
-        assert(glGetError() == GL_NO_ERROR);
-        
-        foreach (GLdouble *v, vertices) {
-            delete v;
-        }
-        
-        vertices.clear();
-        
-        if (glIsTexture(texture)) glDisable(GL_TEXTURE_2D);
+        if (glIsTexture(l.getColorInterpretation())) glDisable(GL_TEXTURE_2D);
     }
 };
 
@@ -177,18 +195,11 @@ struct TesselatedFaceDrawer {
 Layer::Layer(System *s, View v, const std::string &a) 
     : system(s), view(v), 
       attribute(a), vmd(a),
-      attribute_vector_name(0) {
+      attribute_vector_name(0), texture(-1),
+      scale_height(-1) {
 }
 
-void Layer::setColorInterpretation(GLuint texture) {
-    this->texture = texture;
-}
-
-void Layer::setHeightInterpretation(float percent) {
-    scale_height = percent;
-}
-
-void Layer::draw() {
+void Layer::draw(QWidget *parent) {
     if (lists.size() <= attribute_vector_name) {
         lists.resize(attribute_vector_name+1, -1);
     }
@@ -197,7 +208,7 @@ void Layer::draw() {
         glNewList(lists[attribute_vector_name], GL_COMPILE);
         
         if (view.getType() == DM::FACE) {
-            TesselatedFaceDrawer drawer(vmd, name_start, attribute, scale_height, texture, attribute_vector_name);
+            TesselatedFaceDrawer drawer(*this, parent);
             iterate_faces(system, view, drawer);
         }
         if (view.getType() == DM::EDGE) {
@@ -219,8 +230,8 @@ void Layer::draw() {
     glPopMatrix();
 }
 
-void Layer::drawWithNames() {
-    draw();
+void Layer::drawWithNames(QWidget *parent) {
+    draw(parent);
 }
 
 void Layer::systemChanged() {

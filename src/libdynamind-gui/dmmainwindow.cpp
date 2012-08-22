@@ -233,7 +233,7 @@ void DMMainWindow::createModuleListView()
         QString name=QString::fromStdString(selectedModule->getDMModel()->getClassName());
         cout << "Selected: " << name.toStdString() << endl;
         if (name=="P8BaseLine") {
-            successors<<"P8Rain"<<"AppendAttributes";
+            successors<<"P8Rain"<<"AppendAttributes"<<"ExportToShapeFile";
         }
         if (name=="ImportShapeFile") {
             successors<<"ExportToShapeFile";

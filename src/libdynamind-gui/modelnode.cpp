@@ -88,6 +88,19 @@ void ModelNode::updatePorts () {
 
     for (int i = this->ports.size()-1; i > -1; i--) {
         GUIPort * gp = this->ports[i];
+        if (!gp->getVIBePort()) {
+            if (gp->getPortType() > DM::OUTPORTS) {
+                ExistingInPorts.removeAt(ExistingInPorts.indexOf(gp->getPortName()));
+                this->inputCounter--;
+            } else {
+                ExistingOutPorts.removeAt(ExistingOutPorts.indexOf(gp->getPortName()));
+                this->outputCounter--;
+            }
+
+            this->ports.remove(i);
+            delete gp;
+            continue;
+        }
         if (gp->getVIBePort()->isPortTuple())
             continue;
         if (gp->getPortType()  > DM::OUTPORTS ) {
@@ -402,7 +415,7 @@ void ModelNode::editModelNode() {
 }
 
 void ModelNode::renameModelNode() {
-    QString text =QInputDialog::getText(0, "Name", tr("User name:"), QLineEdit::Normal);
+    QString text =QInputDialog::getText(0, "Name", tr("Input:"), QLineEdit::Normal);
     if (!text.isEmpty())
         this->getDMModel()->setName(text.toStdString());
 
