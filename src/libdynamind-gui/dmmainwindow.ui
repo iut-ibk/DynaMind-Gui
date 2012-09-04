@@ -123,6 +123,7 @@
     <addaction name="actionZoomIn"/>
     <addaction name="actionZoomOut"/>
     <addaction name="actionZoomReset"/>
+    <addaction name="actionShow_all_modules"/>
    </widget>
    <widget class="QMenu" name="menuModuleDevelopment">
     <property name="title">
@@ -752,6 +753,14 @@
   <action name="actionExit">
    <property name="text">
     <string>Exit</string>
+   </property>
+  </action>
+  <action name="actionShow_all_modules">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>show all modules</string>
    </property>
   </action>
  </widget>
