@@ -233,15 +233,24 @@ void DMMainWindow::createModuleListView()
         QString name=QString::fromStdString(selectedModule->getDMModel()->getClassName());
         cout << "Selected: " << name.toStdString() << endl;
         if (name=="P8BaseLine") {
-            successors<<"P8Rain"<<"AppendAttributes"<<"ExportToShapeFile";
+            successors<<"P8Rain"<<"P8Scenario"<<"AppendAttributes"<<"ExportToShapeFile";
         }
         if (name=="ImportShapeFile") {
             successors<<"ExportToShapeFile";
         }
     }
     else
-        successors<<"P8BaseLine"<<"ExportToShapeFile"<<"ImportShapeFile";
-
+    {
+        if (actionShow_all_modules->isChecked())
+        {
+            successors.empty();
+            //exit(1);
+        }
+        else
+        {
+            successors<<"P8BaseLine"<<"ExportToShapeFile"<<"ImportShapeFile"<<"delimblocks";
+        }
+    }
     std::list<std::string> mlist = (this->simulation->getModuleRegistry()->getRegisteredModules());
     std::map<std::string, std::vector<std::string> > mMap (this->simulation->getModuleRegistry()->getModuleMap());
     this->treeWidget->setColumnCount(1);
@@ -255,7 +264,7 @@ void DMMainWindow::createModuleListView()
         foreach(std::string name, names) {
             QTreeWidgetItem * item;
             //          cout << "it-name: ->" << name << "<-" << endl;
-            if (successors.contains(QString::fromStdString(name)))
+            if (successors.contains(QString::fromStdString(name))||successors.isEmpty())
             {
                 cout << "OK"<<endl;
                 item = new QTreeWidgetItem(items);
@@ -264,7 +273,7 @@ void DMMainWindow::createModuleListView()
                 containsSuccessors=true;
             }
         }
-        if (containsSuccessors)
+        if (containsSuccessors||successors.isEmpty())
         {
             items->setDisabled(false);
             items->setExpanded(true);
@@ -290,7 +299,7 @@ void DMMainWindow::createModuleListView()
         }
 
         for (std::map<std::string, std::vector<std::string> >::iterator it = mMap.begin(); it != mMap.end(); ++it) {
-            if (successors.contains(QString::fromStdString(it->first)))
+            if (successors.contains(QString::fromStdString(it->first))||successors.isEmpty())
             {
                 QTreeWidgetItem * items = new QTreeWidgetItem(this->treeWidget);
                 std::string name = it->first;
@@ -646,3 +655,8 @@ void DMMainWindow::on_actionExit_triggered()
 }
 
 DMMainWindow *hwin;
+
+void DMMainWindow::on_actionShow_all_modules_changed()
+{
+    this->createModuleListView();
+}
