@@ -79,9 +79,11 @@ public:
 
     virtual void updatePorts();
 
+
 public slots:
     void minimize();
     void maximize();
+    void viewData();
 
 signals:
   void removeGroupNode(QString UUID);
