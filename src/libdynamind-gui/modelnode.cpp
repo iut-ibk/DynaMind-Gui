@@ -375,6 +375,8 @@ void ModelNode::contextMenuEvent(QGraphicsSceneContextMenuEvent *event) {
     QAction * a_showHelp = menu.addAction("showHelp");
     QMenu * GroupMenu =     menu.addMenu("Groups");
 
+    a_viewData->setEnabled(this->getDMModel()->getOutPorts().size() > 0);
+    
     GroupMenu->setTitle("Group");
     QVector<QAction *> actions;
     std::vector<DM::Group*> gs = this->simulation->getGroups();
@@ -390,7 +392,7 @@ void ModelNode::contextMenuEvent(QGraphicsSceneContextMenuEvent *event) {
     DM::Module * group = this->getDMModel()->getGroup();
     if (group != 0 && rgroup != 0) {
         if (this->getDMModel()->getGroup()->getUuid().compare(this->simulation->getRootGroup()->getUuid()) != 0) {
-            QAction *a = GroupMenu->addAction("none");
+            QAction *a = GroupMenu->addAction("RootGroup");
             a->setObjectName(QString::fromStdString(this->simulation->getRootGroup()->getUuid()));
             actions.push_back(a);
         }
@@ -454,6 +456,9 @@ void ModelNode::addGroup() {
     DM::Group * g;
     if (name.compare(QString::fromStdString(this->simulation->getRootGroup()->getUuid())) == 0) {
         this->getDMModel()->setGroup((DM::Group * ) this->simulation->getRootGroup());
+        this->getSimulation()->GUIaddModule(this->getDMModel(), this->pos());
+        this->VIBeModuleUUID = "";
+        delete this;
         return;
     }
 
@@ -490,7 +495,7 @@ void ModelNode::printData() {
 
 void ModelNode::viewData() {
     //TODO hook(er) me up
-    DM::Port *p = this->getDMModel()->getInPorts()[0];
+    DM::Port *p = this->getDMModel()->getOutPorts()[0];
     DM::System *system = this->getDMModel()->getData(p->getLinkedDataName());
     
     DM::ViewerWindow *viewer_window = new DM::ViewerWindow(system);

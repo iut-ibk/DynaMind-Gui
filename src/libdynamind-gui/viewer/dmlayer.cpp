@@ -57,13 +57,22 @@ namespace DM {
 template<int SD_GL_PRIMITIVE>
 struct SimpleDrawer {
 
+    GLuint name_start;
+    
+    SimpleDrawer(const Layer &l) : name_start(l.getNameStart()) {
+        
+    }
+    
     void operator()(DM::System *s, DM::View v, void *f_e, DM::Node *n, iterator_pos pos) {
         if (pos == before) {
+            glPushName(name_start);
             glBegin(SD_GL_PRIMITIVE);
             return;
         }
         if (pos == after) {
             glEnd();
+            glPopName();
+            name_start++;
             return;
         }
         glColor3f(0, 0, 0);
@@ -77,7 +86,7 @@ struct TesselatedFaceDrawer {
     const Layer &l;
     Polygon_2 polygon;
     double current_height;
-    double current_tex[2];
+    double current_tex;
     int name_start;
     QProgressDialog *dialog;
     
@@ -112,7 +121,7 @@ struct TesselatedFaceDrawer {
             polygon.clear();
             name_start++;
             current_height = 0.0;
-            current_tex[0] = current_tex[1] = 0.0;
+            current_tex = 0.0;
             dialog->setValue(dialog->value()+1);
             return;
         }
@@ -130,13 +139,12 @@ struct TesselatedFaceDrawer {
                 const ViewMetaData &vmd = l.getViewMetaData();
                 Attribute *a = f->getAttribute(l.getAttribute());
                 if (a->getType() == Attribute::DOUBLE) {
-                    current_tex[0] = (a->getDouble() - vmd.attr_min) / attr_span;
+                    current_tex = (a->getDouble() - vmd.attr_min) / attr_span;
                 } else {
-                    current_tex[0] = (a->getDoubleVector()[l.getAttributeVectorName()] - vmd.attr_min) / attr_span;
+                    current_tex = (a->getDoubleVector()[l.getAttributeVectorName()] - vmd.attr_min) / attr_span;
                 }
-                current_tex[1] = 0.5;
             } else {
-                current_tex[0] = current_tex[1] = 0.0;
+                current_tex = 0.0;
             }
             return;
         }
@@ -149,8 +157,8 @@ struct TesselatedFaceDrawer {
     
     void render() {
         if (glIsTexture(l.getColorInterpretation())) {
-            glEnable(GL_TEXTURE_2D);
-            glBindTexture(GL_TEXTURE_2D, l.getColorInterpretation());
+            glEnable(GL_TEXTURE_1D);
+            glBindTexture(GL_TEXTURE_1D, l.getColorInterpretation());
         }
         assert(glGetError() == GL_NO_ERROR);
         if (polygon.is_clockwise_oriented())
@@ -168,7 +176,7 @@ struct TesselatedFaceDrawer {
             foreach(Point_2 p, poly.container()) {
                 if (glIsTexture(l.getColorInterpretation())) {
                     glColor3f(1.0, 1.0, 1.0);
-                    glTexCoord2dv(current_tex);
+                    glTexCoord1d(current_tex);
                 } else {
                     glColor3f(0.0, 0.0, 0.0);
                 }
@@ -187,7 +195,7 @@ struct TesselatedFaceDrawer {
             glEnd();
         }
         glPopName();
-        if (glIsTexture(l.getColorInterpretation())) glDisable(GL_TEXTURE_2D);
+        if (glIsTexture(l.getColorInterpretation())) glDisable(GL_TEXTURE_1D);
     }
 };
 
@@ -212,11 +220,11 @@ void Layer::draw(QWidget *parent) {
             iterate_faces(system, view, drawer);
         }
         if (view.getType() == DM::EDGE) {
-            SimpleDrawer<GL_LINES> drawer;
+            SimpleDrawer<GL_LINES> drawer(*this);
             iterate_edges(system, view, drawer);
         }
         if (view.getType() == DM::NODE) {
-            SimpleDrawer<GL_POINTS> drawer;
+            SimpleDrawer<GL_POINTS> drawer(*this);
             iterate_nodes(system, view, drawer);
         }
         

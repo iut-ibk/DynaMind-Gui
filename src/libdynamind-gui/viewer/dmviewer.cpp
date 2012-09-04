@@ -31,8 +31,10 @@
 #include "dmnode.h"
 #include "dmlayer.h"
 #include "dmcomponenteditor.h"
+#include "glext.h"
 
 #include <QGLViewer/vec.h>
+#include <QFontMetrics>
 
 #include <string>
 #include <limits>
@@ -48,18 +50,7 @@ void Viewer::init() {
     glDisable(GL_CULL_FACE);
     glClearColor(1.0, 1.0, 1.0, 1.0);
     glPointSize(3);
-    glEnable(GL_POINT_SMOOTH);
-    glEnable(GL_LINE_SMOOTH);
-#ifndef _WIN32
-    glEnable(GL_POLYGON_SMOOTH);
-#endif
-    glEnable (GL_BLEND);
-    glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    glHint(GL_POINT_SMOOTH_HINT, GL_NICEST);
-    glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
-#ifndef _WIN32
-    glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST);
-#endif 
+    glDisable(GL_LIGHTING);
 }
 
 void Viewer::drawWithNames() {
@@ -69,11 +60,67 @@ void Viewer::drawWithNames() {
     }
 }
 
+#define CBAR_W 200
+#define CBAR_H 30
+
+void Viewer::drawColorBars() {
+    if (!layers.size())
+        return;
+    startScreenCoordinatesSystem();
+    
+    QFont f;
+    QFontMetrics fm(f);
+    
+    for(int i = 0; i < layers.size(); i++) {
+        Layer *l = layers[i];
+        if (!glIsTexture(l->getColorInterpretation()))
+            continue;
+        
+        int y_off = i*(fm.lineSpacing() + CBAR_H);
+        
+        double lower = l->getViewMetaData().attr_min;
+        double upper = l->getViewMetaData().attr_max;
+        
+        glColor3f(.0, .0, .0);
+        drawText(0, CBAR_H + y_off + fm.lineSpacing() - 1, QString("%1").arg(lower));
+        drawText(CBAR_W, CBAR_H + y_off + fm.lineSpacing() - 1, QString("%1").arg(upper));
+        
+        glEnable(GL_TEXTURE_1D);
+        glBindTexture(GL_TEXTURE_1D, l->getColorInterpretation());
+        
+        glBegin(GL_QUADS);
+            glColor3f(1.0, 1.0, 1.0);
+            
+            
+            glTexCoord1f(0.0);
+            glVertex2f(0, y_off + CBAR_H);
+            
+            glTexCoord1f(1.0);
+            glVertex2f(CBAR_W, y_off + CBAR_H);
+        
+            glTexCoord1f(1.0);
+            glVertex2f(CBAR_W, y_off);
+            
+            glTexCoord1f(0.0);
+            glVertex2f(0, y_off);
+        glEnd();
+
+        glDisable(GL_TEXTURE_1D);
+    }
+    stopScreenCoordinatesSystem();
+}
+
 void Viewer::draw() {
     CHECK_SYSTEM;
+    glEnable(GL_MULTISAMPLE);
     foreach(Layer *l, layers) {
         l->draw(this);
     }
+    glDisable(GL_MULTISAMPLE);
+}
+
+void Viewer::postDraw() {
+    drawColorBars();
 }
 
 void Viewer::postSelection(const QPoint &) {
@@ -136,7 +183,7 @@ void Viewer::updateLayerLayout() {
     
     setSceneRadius(max_radius);
     using namespace qglviewer;
-    Vec c(Vec(vmd.min) + Vec(max_radius, max_radius, 0));
+    Vec c(Vec(vmd.min) + Vec((vmd.max[0] - vmd.min[0])/2.0, (vmd.max[1] - vmd.min[1])/2.0, 0.0));
     setSceneCenter(c);
     
     //update camera only the first time
