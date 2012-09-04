@@ -120,6 +120,8 @@ private slots:
     void on_actionZoomIn_activated();
     void on_actionExit_triggered();
 
+    void on_actionShow_all_modules_changed();
+
 signals:
     void updateSplashMessage(QString);
 
