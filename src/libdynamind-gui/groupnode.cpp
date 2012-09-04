@@ -39,6 +39,7 @@
 #include <iostream>
 #include <cmath>
 #include "dmmainwindow.h"
+#include "viewer/dmviewerwindow.h"
 
 
 GroupNode::GroupNode()
@@ -56,6 +57,27 @@ GroupNode::~GroupNode() {
 
     emit removeGroupNode(QString::fromStdString(this->UUID));
 
+}
+
+
+void GroupNode::viewData()
+{
+    DM::Group * g = (DM::Group*)this->getDMModel();
+    DM::Port *p = g->getOutPortTuples().at(0)->getOutPort();
+    cout << "port: "<< p->getLinkedDataName() << endl;
+    DM::System *system = this->getDMModel()->getData(p->getLinkedDataName());
+    cout << "system: "<< system << endl;
+    DM::ViewerWindow *viewer_window = new DM::ViewerWindow(system);
+    viewer_window->show();
+
+
+    /*
+    DM::Port *p = this->getDMModel()->getInPorts()[0];
+    DM::System *system = this->getDMModel()->getData(p->getLinkedDataName());
+
+    DM::ViewerWindow *viewer_window = new DM::ViewerWindow(system);
+    viewer_window->show();
+    */
 }
 
 
