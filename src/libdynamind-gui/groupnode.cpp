@@ -62,10 +62,11 @@ GroupNode::~GroupNode() {
 
 void GroupNode::viewData()
 {
-    DM::Group * g = (DM::Group*)this->getDMModel();
-    DM::Port *p = g->getOutPortTuples().at(0)->getOutPort();
+    DM::Group* g=(DM::Group*)this->getDMModel();
+    DM::Port* p=g->getOutPortTuples().at(0)->getOutPort();
     cout << "port: "<< p->getLinkedDataName() << endl;
-    DM::System *system = this->getDMModel()->getData(p->getLinkedDataName());
+    cout << "g: "<< g << endl;
+    DM::System *system = g->getData(p->getLinkedDataName());
     cout << "system: "<< system << endl;
     DM::ViewerWindow *viewer_window = new DM::ViewerWindow(system);
     viewer_window->show();
@@ -74,7 +75,6 @@ void GroupNode::viewData()
     /*
     DM::Port *p = this->getDMModel()->getInPorts()[0];
     DM::System *system = this->getDMModel()->getData(p->getLinkedDataName());
-
     DM::ViewerWindow *viewer_window = new DM::ViewerWindow(system);
     viewer_window->show();
     */
