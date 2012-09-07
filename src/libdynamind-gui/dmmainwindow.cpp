@@ -162,7 +162,7 @@ void DMMainWindow::renameGroupWindow(GroupNode * g) {
 DMMainWindow::DMMainWindow(QWidget * parent)
 {
 
-    setupUi(this);
+    setupUi(this);    
     firstrun=true;
     log_updater = new GuiLogSink();
     DM::Log::init(log_updater,DM::Debug);
@@ -209,6 +209,19 @@ DMMainWindow::DMMainWindow(QWidget * parent)
     this->rootItemModelTree->setExpanded(true);
 
     hwin=this;
+
+
+    QWidget* spacer = new QWidget();
+    spacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    // toolBar is a pointer to an existing toolbar
+    toolBar_3->addWidget(spacer);
+
+    QLabel *label = new QLabel(this);
+//    label->setPixmap(QPixmap(":/Icons/ressources/list-remove.png"));
+//    label->setPixmap(QPixmap(":/Icons/ressources/list-add.png"));
+    label->setPixmap(QPixmap(":/Icons/ressources/crc.png"));
+    this->toolBar_3->addWidget(label);
+    this->setWindowTitle("P8-WSC");
 }
 
 void DMMainWindow::createModuleListView()
@@ -233,7 +246,10 @@ void DMMainWindow::createModuleListView()
         QString name=QString::fromStdString(selectedModule->getDMModel()->getClassName());
         cout << "Selected: " << name.toStdString() << endl;
         if (name=="P8BaseLine") {
-            successors<<"P8Rain"<<"P8Scenario"<<"AppendAttributes"<<"ExportToShapeFile";
+            successors<<"Rain"<<"P8Scenario";
+        }
+        if (name=="Rain") {
+            successors<<"P8Scenario";
         }
         if (name=="ImportShapeFile") {
             successors<<"ExportToShapeFile";
@@ -248,7 +264,7 @@ void DMMainWindow::createModuleListView()
         }
         else
         {
-            successors<<"P8BaseLine"<<"ExportToShapeFile"<<"ImportShapeFile"<<"delimblocks";
+            successors<<"P8BaseLine";
         }
     }
     std::list<std::string> mlist = (this->simulation->getModuleRegistry()->getRegisteredModules());

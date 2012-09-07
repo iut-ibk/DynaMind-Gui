@@ -375,8 +375,9 @@ void ModelNode::contextMenuEvent(QGraphicsSceneContextMenuEvent *event) {
     QAction * a_showHelp = menu.addAction("showHelp");
     QMenu * GroupMenu =     menu.addMenu("Groups");
 
-    a_viewData->setEnabled(this->getDMModel()->getOutPorts().size() > 0);
-    
+//    a_viewData->setEnabled(this->getDMModel()->getOutPorts().size() > 0);
+    a_viewData->setEnabled(true);
+
     GroupMenu->setTitle("Group");
     QVector<QAction *> actions;
     std::vector<DM::Group*> gs = this->simulation->getGroups();
@@ -496,6 +497,7 @@ void ModelNode::printData() {
 void ModelNode::viewData() {
     //TODO hook(er) me up
     DM::Port *p = this->getDMModel()->getOutPorts()[0];
+    cout << "port: "<< p->getLinkedDataName() << endl;
     DM::System *system = this->getDMModel()->getData(p->getLinkedDataName());
     
     DM::ViewerWindow *viewer_window = new DM::ViewerWindow(system);

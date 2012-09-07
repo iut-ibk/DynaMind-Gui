@@ -3,16 +3,15 @@
         <file>ressources/document-new.png</file>
         <file>ressources/document-save.png</file>
         <file>ressources/stock_zoom-in.png</file>
-
         <file>ressources/stock_zoom-1.png</file>
         <file>ressources/stock_zoom-out.png</file>
-
         <file>ressources/stock_zoom-page.png</file>
         <file>ressources/document-open.png</file>
         <file>ressources/list-add.png</file>
         <file>ressources/list-remove.png</file>
         <file>ressources/player_play.png</file>
         <file>ressources/dynamind-icon.png</file>
+        <file>ressources/crc.png</file>
+        <file>ressources/crc2.png</file>
     </qresource>
-
 </RCC>
