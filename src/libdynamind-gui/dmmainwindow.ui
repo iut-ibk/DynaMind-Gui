@@ -20,7 +20,7 @@
    <string>DynaMind</string>
   </property>
   <property name="windowIcon">
-   <iconset resource="../dynamind-modelbuilder/icons.qrc">
+   <iconset resource="icons.qrc">
     <normaloff>:/Icons/ressources/dynamind-icon.png</normaloff>:/Icons/ressources/dynamind-icon.png</iconset>
   </property>
   <property name="unifiedTitleAndToolBarOnMac">
@@ -122,6 +122,8 @@
     <addaction name="actionZoomIn"/>
     <addaction name="actionZoomOut"/>
     <addaction name="actionZoomReset"/>
+    <addaction name="separator"/>
+    <addaction name="action2DViewer"/>
    </widget>
    <widget class="QMenu" name="menuModuleDevelopment">
     <property name="title">
@@ -642,7 +644,7 @@
   </widget>
   <action name="actionRun">
    <property name="icon">
-    <iconset resource="../dynamind-modelbuilder/icons.qrc">
+    <iconset resource="icons.qrc">
      <normaloff>:/Icons/ressources/player_play.png</normaloff>:/Icons/ressources/player_play.png</iconset>
    </property>
    <property name="text">
@@ -670,7 +672,7 @@
   </action>
   <action name="actionOpen">
    <property name="icon">
-    <iconset resource="../dynamind-modelbuilder/icons.qrc">
+    <iconset resource="icons.qrc">
      <normaloff>:/Icons/ressources/document-open.png</normaloff>:/Icons/ressources/document-open.png</iconset>
    </property>
    <property name="text">
@@ -682,7 +684,7 @@
   </action>
   <action name="actionSave">
    <property name="icon">
-    <iconset resource="../dynamind-modelbuilder/icons.qrc">
+    <iconset resource="icons.qrc">
      <normaloff>:/Icons/ressources/document-save.png</normaloff>:/Icons/ressources/document-save.png</iconset>
    </property>
    <property name="text">
@@ -694,7 +696,7 @@
   </action>
   <action name="actionNew">
    <property name="icon">
-    <iconset resource="../dynamind-modelbuilder/icons.qrc">
+    <iconset resource="icons.qrc">
      <normaloff>:/Icons/ressources/document-new.png</normaloff>:/Icons/ressources/document-new.png</iconset>
    </property>
    <property name="text">
@@ -706,7 +708,7 @@
   </action>
   <action name="actionZoomIn">
    <property name="icon">
-    <iconset resource="../dynamind-modelbuilder/icons.qrc">
+    <iconset resource="icons.qrc">
      <normaloff>:/Icons/ressources/stock_zoom-in.png</normaloff>:/Icons/ressources/stock_zoom-in.png</iconset>
    </property>
    <property name="text">
@@ -718,7 +720,7 @@
   </action>
   <action name="actionZoomOut">
    <property name="icon">
-    <iconset resource="../dynamind-modelbuilder/icons.qrc">
+    <iconset resource="icons.qrc">
      <normaloff>:/Icons/ressources/stock_zoom-out.png</normaloff>:/Icons/ressources/stock_zoom-out.png</iconset>
    </property>
    <property name="text">
@@ -730,7 +732,7 @@
   </action>
   <action name="actionZoomReset">
    <property name="icon">
-    <iconset resource="../dynamind-modelbuilder/icons.qrc">
+    <iconset resource="icons.qrc">
      <normaloff>:/Icons/ressources/stock_zoom-page.png</normaloff>:/Icons/ressources/stock_zoom-page.png</iconset>
    </property>
    <property name="text">
@@ -757,7 +759,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="../dynamind-modelbuilder/icons.qrc">
+    <iconset resource="icons.qrc">
      <normaloff>:/Icons/ressources/reload.png</normaloff>:/Icons/ressources/reload.png</iconset>
    </property>
    <property name="text">
@@ -788,9 +790,13 @@
     <string>Reset</string>
    </property>
   </action>
+  <action name="action2DViewer">
+   <property name="text">
+    <string>2D Viewer</string>
+   </property>
+  </action>
  </widget>
  <resources>
-  <include location="../dynamind-modelbuilder/icons.qrc"/>
   <include location="icons.qrc"/>
  </resources>
  <connections/>
