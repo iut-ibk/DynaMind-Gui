@@ -1,6 +1,6 @@
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_BINARY_DIR})
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR})
-
+INCLUDE_DIRECTORIES(/usr/local/Cellar/icu4c/50.1/include)
 FILE(GLOB CPP_GUI_FILES *.cpp)
 FILE(GLOB H_GUI_FILES *.h)
 FILE(GLOB UI_FILES *.ui)
@@ -24,9 +24,9 @@ ENDIF()
 
 
 IF (${CMAKE_CXX_COMPILER_ID} STREQUAL GNU)
-       TARGET_LINK_LIBRARIES(dynamindgui dynamind-viewer ${DYNAMIND_CORE_LIBRARY} ${QT_QTMAIN_LIBRARY} ${QT_LIBRARIES})
+       TARGET_LINK_LIBRARIES(dynamindgui dynamind-viewer ${DYNAMIND_CORE_LIBRARY} ${QT_QTMAIN_LIBRARY} ${QT_LIBRARIES} -lmapnik  /usr/local/Cellar/icu4c/50.1/lib/libicudata.dylib  /usr/local/Cellar/icu4c/50.1/lib/libicuuc.dylib )
 ELSE()
-       TARGET_LINK_LIBRARIES(dynamindgui dynamind-viewer ${DYNAMIND_CORE_LIBRARY} ${QT_QTMAIN_LIBRARY} ${QT_LIBRARIES})
+       TARGET_LINK_LIBRARIES(dynamindgui dynamind-viewer ${DYNAMIND_CORE_LIBRARY} ${QT_QTMAIN_LIBRARY} ${QT_LIBRARIES} -lmapnik -L/usr/local/Cellar/icu4c/50.1/lib/libicudata.dylib)
 ENDIF()
 
 
