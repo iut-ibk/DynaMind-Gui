@@ -33,6 +33,8 @@
 #define MAINWINDOW_H
 
 #include "dmcompilersettings.h"
+#include "viewer2d_prototype.h"
+
 #include <QMainWindow>
 
 //#include "plot.h"
@@ -122,6 +124,7 @@ private slots:
     void on_actionZoomIn_triggered();
     void on_actionAbout_triggered();
     void on_actionShow_Help_triggered();
+    void on_action2DViewer_triggered();
 
 };
 
