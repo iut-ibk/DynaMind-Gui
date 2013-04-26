@@ -61,6 +61,7 @@ private:
     mapnik::layer_descriptor desc_;
     mapnik::box2d<double> extent_;
     DM::System * sys;
+    DM::View view;
 
 
 };

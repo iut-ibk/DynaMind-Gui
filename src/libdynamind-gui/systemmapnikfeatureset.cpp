@@ -27,11 +27,16 @@ mapnik::feature_ptr SystemMapnikFeatureset::next()
 {
 
 
+    std::string attribute("baujahr");
+
+    // the featureset context needs to know the field schema
+    ctx_->push(attribute);
+
 
     if (feature_id_ < feature_uuids.size())
     {
         // let us pretend it just has one column/attribute name
-        /*std::string attribute("key");
+        /*  std::string attribute("baujahr");
 
         // the featureset context needs to know the field schema
         ctx_->push(attribute);
@@ -39,12 +44,10 @@ mapnik::feature_ptr SystemMapnikFeatureset::next()
         // create a new feature
         mapnik::feature_ptr feature(mapnik::feature_factory::create(ctx_,feature_id_));
 
-        // increment the count so that we only return one feature
-
 
         // create an attribute pair of key:value
         UnicodeString ustr = tr_->transcode("hello world!");
-        feature->put(attribute,ustr);
+        feature->put(attribute,2002);
 
         // we need a geometry to display so just for fun here
         // we take the center of the bbox that was used to query
@@ -64,17 +67,12 @@ mapnik::feature_ptr SystemMapnikFeatureset::next()
         // A feature usually will have just one geometry of a given type
         // but mapnik does support many geometries per feature of any type
         // so here we draw a line around the point
-        mapnik::geometry_type * line = new mapnik::geometry_type(mapnik::LineString);
-        line->move_to(box_.minx(),box_.miny());
-        line->line_to(box_.minx(),box_.maxy());
-        line->line_to(box_.maxx(),box_.maxy());
-        line->line_to(box_.maxx(),box_.miny());
-        line->line_to(box_.minx(),box_.miny());
-        feature->add_geometry(line);*/
+*/
 
         std::string uuid = this->feature_uuids[feature_id_];
 
         DM::Face * f = sys->getFace(uuid);
+
         std::vector<DM::Node*> nodes = f->getNodePointers();
 
         mapnik::geometry_type * polygon = new mapnik::geometry_type(mapnik::Polygon);
@@ -86,8 +84,15 @@ mapnik::feature_ptr SystemMapnikFeatureset::next()
 
         ++feature_id_;
 
+
         mapnik::feature_ptr feature(mapnik::feature_factory::create(ctx_,feature_id_));
         feature->add_geometry(polygon);
+        //DM::Logger(DM::Standard) << f->getAttribute("baujahr")->getDouble();
+
+        std::string value_str = f->getAttribute("baujahr")->getString();
+
+        UnicodeString value = tr_->transcode(value_str.c_str());
+        feature->put("baujahr", value);
         // return the feature!
         return feature;
     }
