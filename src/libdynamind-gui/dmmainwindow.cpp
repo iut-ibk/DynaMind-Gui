@@ -616,8 +616,3 @@ void DMMainWindow::on_actionShow_Help_triggered() {
     this->helpviewer->show();
 }
 
-void DMMainWindow::on_action2DViewer_triggered()
-{
-    DM::Logger(DM::Standard) << "Test";
-    viewer2d_prototype();
-}

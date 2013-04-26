@@ -124,7 +124,6 @@ private slots:
     void on_actionZoomIn_triggered();
     void on_actionAbout_triggered();
     void on_actionShow_Help_triggered();
-    void on_action2DViewer_triggered();
 
 };
 

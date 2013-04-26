@@ -144,6 +144,7 @@ public slots:
     void setDebug();
     void setRelease();
     void setResetModule();
+    void view2DViewer();
    signals:
     void showHelp(std::string, std::string);
 
