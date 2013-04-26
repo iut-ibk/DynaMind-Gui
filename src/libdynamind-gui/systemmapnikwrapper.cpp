@@ -3,6 +3,7 @@
 
 #include <boost/make_shared.hpp>
 #include <dmsystem.h>
+#include <dm.h>
 
 using mapnik::datasource;
 using mapnik::parameters;
@@ -11,10 +12,10 @@ using mapnik::parameters;
 DATASOURCE_PLUGIN(SystemMapnikWrapper)
 
 SystemMapnikWrapper::SystemMapnikWrapper(mapnik::parameters const & params, bool bind,  DM::System * sys )
-: datasource(params),
-  sys(sys),
-    desc_(*params.get<std::string>("type"), *params.get<std::string>("encoding","utf-8")),
-    extent_()
+    : datasource(params),
+      sys(sys),
+      desc_(*params.get<std::string>("type"), *params.get<std::string>("encoding","utf-8")),
+      extent_()
 {
     this->init(params);
 }
@@ -26,7 +27,36 @@ void SystemMapnikWrapper::init(mapnik::parameters const& params)
     // let's just create a world extent in Mapnik's default srs:
     // '+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs' (equivalent to +init=epsg:4326)
     // see http://spatialreference.org/ref/epsg/4326/ for more details
-    extent_.init(-180,-90,180,90);
+
+
+    //Calculate Extend
+    std::map<std::string, DM::Node*> nodes_map = sys->getAllNodes();
+
+    std::vector<DM::Node*> nodes;
+    for (std::map<std::string, DM::Node*>::const_iterator it = nodes_map.begin(); it != nodes_map.end(); ++it)
+        nodes.push_back(it->second);
+
+    if (!nodes.size()) {
+        extent_.init(-180,-90,180,90);
+        return;
+    }
+
+    double x1 = nodes[0]->getX();
+    double y1 = nodes[0]->getY();
+    double x2 = nodes[0]->getX();
+    double y2 = nodes[0]->getY();
+
+    foreach (DM::Node *n , nodes) {
+        if (x1 > n->getX()) x1 = n->getX();
+        if (x2 < n->getX()) x2 = n->getX();
+        if (y1 > n->getY()) y1 = n->getY();
+        if (y2 < n->getY()) y2 = n->getY();
+    }
+
+    extent_.init(x1,y1,x2,y2);
+
+
+
 }
 
 SystemMapnikWrapper::~SystemMapnikWrapper() { }
@@ -34,7 +64,7 @@ SystemMapnikWrapper::~SystemMapnikWrapper() { }
 // This name must match the plugin filename, eg 'hello.input'
 const char * SystemMapnikWrapper::name()
 {
-    return "hello";
+    return "dm";
 }
 
 mapnik::datasource::datasource_t SystemMapnikWrapper::type() const

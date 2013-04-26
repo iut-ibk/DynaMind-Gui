@@ -26,7 +26,7 @@ ENDIF()
 IF (${CMAKE_CXX_COMPILER_ID} STREQUAL GNU)
        TARGET_LINK_LIBRARIES(dynamindgui dynamind-viewer ${DYNAMIND_CORE_LIBRARY} ${QT_QTMAIN_LIBRARY} ${QT_LIBRARIES} -lmapnik  /usr/local/Cellar/icu4c/50.1/lib/libicudata.dylib  /usr/local/Cellar/icu4c/50.1/lib/libicuuc.dylib )
 ELSE()
-       TARGET_LINK_LIBRARIES(dynamindgui dynamind-viewer ${DYNAMIND_CORE_LIBRARY} ${QT_QTMAIN_LIBRARY} ${QT_LIBRARIES} -lmapnik -L/usr/local/Cellar/icu4c/50.1/lib/libicudata.dylib)
+       TARGET_LINK_LIBRARIES(dynamindgui dynamind-viewer ${DYNAMIND_CORE_LIBRARY} ${QT_QTMAIN_LIBRARY} ${QT_LIBRARIES} -lmapnik /usr/local/Cellar/icu4c/50.1/lib/libicudata.dylib  /usr/local/Cellar/icu4c/50.1/lib/libicuuc.dylib)
 ENDIF()
 
 

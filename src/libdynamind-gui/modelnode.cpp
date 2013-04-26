@@ -40,6 +40,7 @@
 #include <guisimulation.h>
 #include <dmsystem.h>
 #include <dmviewerwindow.h>
+#include <viewer2d_prototype.h>
 
 std::string ModelNode::getParameterAsString(std::string name) {
     std::ostringstream val;
@@ -357,6 +358,7 @@ void ModelNode::contextMenuEvent(QGraphicsSceneContextMenuEvent *event) {
     QAction * a_delete = menu.addAction("delete");
     QAction * a_showData = menu.addAction("stream");
     QAction * a_viewData = menu.addAction("viewer");
+    QAction * a_view2DViewer = menu.addAction("2DViewer");
 
     QAction * a_showHelp = menu.addAction("help");
     QAction * a_module_debug = 0;
@@ -404,6 +406,8 @@ void ModelNode::contextMenuEvent(QGraphicsSceneContextMenuEvent *event) {
     connect( a_module_release, SIGNAL(triggered() ), this, SLOT( setRelease() ), Qt::DirectConnection);
     connect( a_showHelp, SIGNAL(triggered() ), this, SLOT( showHelp() ), Qt::DirectConnection);
     connect( a_reset, SIGNAL(triggered() ), this, SLOT( setResetModule() ), Qt::DirectConnection);
+    connect(a_view2DViewer, SIGNAL(triggered() ), this, SLOT(view2DViewer() ), Qt::DirectConnection);
+
     menu.exec(event->screenPos());
 
 }
@@ -490,7 +494,6 @@ void ModelNode::printData() {
 }
 
 void ModelNode::viewData() {
-    //TODO hook(er) me up
     DM::Port *p = this->getDMModel()->getOutPorts()[0];
     DM::System *system = this->getDMModel()->getData(p->getLinkedDataName());
     
@@ -500,7 +503,6 @@ void ModelNode::viewData() {
 
 void ModelNode::showHelp() {
     emit showHelp(this->getDMModel()->getClassName(), this->getDMModel()->getUuid());
-    //this->simulation->showHelp();
 }
 
 void ModelNode::setDebug() {
@@ -516,4 +518,13 @@ void ModelNode::setResetModule()
     this->getDMModel()->setExecuted(false);
     this->simulation->reloadModules();
     this->simulation->updateSimulation();
+}
+
+void ModelNode::view2DViewer()
+{
+
+    DM::Port *p = this->getDMModel()->getOutPorts()[0];
+    DM::System *system = this->getDMModel()->getData(p->getLinkedDataName());
+
+    viewer2d_prototype vw(system);
 }
