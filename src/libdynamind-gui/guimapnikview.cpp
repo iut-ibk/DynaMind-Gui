@@ -25,6 +25,7 @@
 #include <mapnik/color_factory.hpp>
 #include <mapnik/image_util.hpp>
 #include <mapnik/config_error.hpp>
+#include <mapnik/load_map.hpp>
 
 using namespace mapnik;
 
@@ -51,6 +52,12 @@ void GUIMapnikView::paintEvent(QPaintEvent *ev)
     painter.end();
 }
 
+void GUIMapnikView::resizeEvent(QResizeEvent *event)
+{
+    this->drawMap();
+    QWidget::resizeEvent(event);
+}
+
 void GUIMapnikView::init_mapnik() {
 
     std::string mapnik_dir("/usr/local/Cellar/mapnik/2.1.0/lib");
@@ -62,40 +69,41 @@ void GUIMapnikView::init_mapnik() {
 
     map_ = new Map(this->width(),this->height());
 
+
     DM::Logger(DM::Debug) << this->width();
     map_->set_background(color("white"));
 
 
     // Provinces (polygon)
     feature_type_style provpoly_style;
-
     rule provpoly_rule_on;
-    provpoly_rule_on.append(stroke(color(0, 0, 0), 10.0));
+    provpoly_rule_on.append(stroke(color(0, 0, 0), 1));
     provpoly_style.add_rule(provpoly_rule_on);
 
-    map_->insert_style("cityblocks",provpoly_style);
+    map_->insert_style("polygon",provpoly_style);
+
 
     // Provinces (polygon)
     feature_type_style polygon_style;
 
     rule polygon_rule_on;
+    polygon_rule_on.set_filter((parse_expression("[baujahr] = '2000'")));
     polygon_rule_on.append(polygon_symbolizer(color(0, 0, 0)));
     polygon_style.add_rule(polygon_rule_on);
+    map_->insert_style("face",polygon_style);
 
-    map_->insert_style("superblock",polygon_style);
 
-    // layers
-    // Provincial  polygons
     {
         parameters p;
         p["type"]="dm";
-        //p["file"]="/Users/christianurich/Documents/innsbruck_cityblocks_faces";
-        //p["encoding"]="latin1";
+        p["view_name"]="SUPERBLOCK";
+        p["view_type"]= DM::FACE;
 
         layer lyr("key");
         boost::shared_ptr<SystemMapnikWrapper> ds(new SystemMapnikWrapper(p, true, sys_));
         lyr.set_datasource(ds);
-        lyr.add_style("superblock");
+        //lyr.add_style("polygon");
+        lyr.add_style("face");
         map_->addLayer(lyr);
     }
 
@@ -103,6 +111,8 @@ void GUIMapnikView::init_mapnik() {
 
 void GUIMapnikView::drawMap()
 {
+    map_->set_height(this->height());
+    map_->set_width(this->width());
     map_->zoom_all();
     image_32 buf(map_->width(),map_->height());
     agg_renderer<image_32> ren(*map_,buf);

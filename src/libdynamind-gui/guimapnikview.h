@@ -33,6 +33,8 @@ private:
 
 protected:
     void paintEvent(QPaintEvent* ev);
+    void resizeEvent ( QResizeEvent * event );
+
 };
 
 #endif // GUIMAPNIKVIEW_H

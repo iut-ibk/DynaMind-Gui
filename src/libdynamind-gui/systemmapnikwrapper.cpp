@@ -1,5 +1,5 @@
 #include "systemmapnikwrapper.h"
-
+#include "tbvectordata.h"
 
 #include <boost/make_shared.hpp>
 #include <dmsystem.h>
@@ -40,18 +40,18 @@ void SystemMapnikWrapper::init(mapnik::parameters const& params)
         extent_.init(-180,-90,180,90);
         return;
     }
+    std::string view_name = *params.get<std::string>("view_name");
+    int view_type = *params.get<int>("view_type");
+    this->view = DM::View(view_name,view_type, DM::READ);
 
-    double x1 = nodes[0]->getX();
-    double y1 = nodes[0]->getY();
-    double x2 = nodes[0]->getX();
-    double y2 = nodes[0]->getY();
+    double x1;
+    double y1;
+    double x2;
+    double y2;
 
-    foreach (DM::Node *n , nodes) {
-        if (x1 > n->getX()) x1 = n->getX();
-        if (x2 < n->getX()) x2 = n->getX();
-        if (y1 > n->getY()) y1 = n->getY();
-        if (y2 < n->getY()) y2 = n->getY();
-    }
+    TBVectorData::GetViewExtend(sys, view, x1, y1, x2, y2);
+
+
 
     extent_.init(x1,y1,x2,y2);
 
