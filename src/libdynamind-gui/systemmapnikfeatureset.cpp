@@ -87,7 +87,6 @@ mapnik::feature_ptr SystemMapnikFeatureset::next()
 
         mapnik::feature_ptr feature(mapnik::feature_factory::create(ctx_,feature_id_));
         feature->add_geometry(polygon);
-        //DM::Logger(DM::Standard) << f->getAttribute("baujahr")->getDouble();
 
         std::string value_str = f->getAttribute("baujahr")->getString();
 

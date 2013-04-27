@@ -29,12 +29,16 @@
 
 using namespace mapnik;
 
-GUIMapnikView::GUIMapnikView(DM::System * sys, QWidget *parent) :
+GUIMapnikView::GUIMapnikView(QWidget *parent, DM::System * sys) :
     sys_(sys),
     QWidget(parent),
     ui(new Ui::GUIMapnikView)
 {
     ui->setupUi(this);
+
+    if (!sys)
+        return;
+
     this->init_mapnik();
     this->drawMap();
 }
@@ -54,12 +58,15 @@ void GUIMapnikView::paintEvent(QPaintEvent *ev)
 
 void GUIMapnikView::resizeEvent(QResizeEvent *event)
 {
+    if (!sys_)
+        return;
     this->drawMap();
     QWidget::resizeEvent(event);
 }
 
 void GUIMapnikView::init_mapnik() {
-
+    if (!sys_)
+        return;
     std::string mapnik_dir("/usr/local/Cellar/mapnik/2.1.0/lib");
     DM::Logger(DM::Debug) << " looking for 'shape.input' plugin in... " << mapnik_dir << "/mapnik/input/";
     datasource_cache::instance()->register_datasources(mapnik_dir + "/mapnik/input/");
@@ -111,6 +118,8 @@ void GUIMapnikView::init_mapnik() {
 
 void GUIMapnikView::drawMap()
 {
+    if (!sys_)
+        return;
     map_->set_height(this->height());
     map_->set_width(this->width());
     map_->zoom_all();

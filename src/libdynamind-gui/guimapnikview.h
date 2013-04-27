@@ -19,7 +19,7 @@ class GUIMapnikView : public QWidget
     Q_OBJECT
     
 public:
-    explicit GUIMapnikView(DM::System * sys, QWidget *parent = 0);
+    explicit GUIMapnikView( QWidget *parent = 0, DM::System * sys=0);
     ~GUIMapnikView();
 public slots:
     void init_mapnik();

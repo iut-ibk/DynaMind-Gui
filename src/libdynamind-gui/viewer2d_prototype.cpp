@@ -4,13 +4,13 @@
 
 #include <iostream>
 
-#include <guimapnikview.h>
+#include <guimapnikviewer.h>
 
 
 viewer2d_prototype::viewer2d_prototype(DM::System *sys)
 {
 
-    GUIMapnikView * view = new GUIMapnikView(sys);
-    view->show();
+    GUIMapnikViewer * viewer = new GUIMapnikViewer(0,sys);
+    viewer->show();
 
 }
