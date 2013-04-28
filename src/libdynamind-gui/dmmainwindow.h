@@ -33,8 +33,6 @@
 #define MAINWINDOW_H
 
 #include "dmcompilersettings.h"
-#include "viewer2d_prototype.h"
-
 #include <QMainWindow>
 
 //#include "plot.h"

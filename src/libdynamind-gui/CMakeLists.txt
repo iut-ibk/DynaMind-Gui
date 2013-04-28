@@ -1,6 +1,6 @@
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_BINARY_DIR})
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR})
-INCLUDE_DIRECTORIES(/usr/local/Cellar/icu4c/50.1/include)
+
 FILE(GLOB CPP_GUI_FILES *.cpp)
 FILE(GLOB H_GUI_FILES *.h)
 FILE(GLOB UI_FILES *.ui)
@@ -12,6 +12,7 @@ QT4_ADD_RESOURCES(CPP_GUI_FILES icons.qrc splash.qrc)
 INCLUDE_DIRECTORIES( ${QT_QTGUI_INCLUDE_DIR} ${QGLVIEWER_INCLUDE_DIR} )
 INCLUDE_DIRECTORIES(../3dparty/alglib/src)
 INCLUDE_DIRECTORIES(../../DynaMind-Viewer/src)
+INCLUDE_DIRECTORIES(../../viewer_mapnik/src)
 
 ADD_LIBRARY(dynamindgui STATIC ${CPP_GUI_FILES} ${H_GUI_FILES} ${QWT_CPPS} ${QTGL_CPPS} ${ALGLIB_CPP})
 
@@ -24,9 +25,9 @@ ENDIF()
 
 
 IF (${CMAKE_CXX_COMPILER_ID} STREQUAL GNU)
-       TARGET_LINK_LIBRARIES(dynamindgui dynamind-viewer ${DYNAMIND_CORE_LIBRARY} ${QT_QTMAIN_LIBRARY} ${QT_LIBRARIES} -lmapnik  /usr/local/Cellar/icu4c/50.1/lib/libicudata.dylib  /usr/local/Cellar/icu4c/50.1/lib/libicuuc.dylib )
+       TARGET_LINK_LIBRARIES(dynamindgui dynamind-viewer ${DYNAMIND_CORE_LIBRARY} ${QT_QTMAIN_LIBRARY} ${QT_LIBRARIES} )
 ELSE()
-       TARGET_LINK_LIBRARIES(dynamindgui dynamind-viewer ${DYNAMIND_CORE_LIBRARY} ${QT_QTMAIN_LIBRARY} ${QT_LIBRARIES} -lmapnik /usr/local/Cellar/icu4c/50.1/lib/libicudata.dylib  /usr/local/Cellar/icu4c/50.1/lib/libicuuc.dylib)
+       TARGET_LINK_LIBRARIES(dynamindgui dynamind-viewer ${DYNAMIND_CORE_LIBRARY} ${QT_QTMAIN_LIBRARY} ${QT_LIBRARIES} )
 ENDIF()
 
 

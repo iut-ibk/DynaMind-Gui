@@ -73,6 +73,8 @@ ENDIF()
 ADD_SUBDIRECTORY(DynaMind-Viewer)
 ADD_SUBDIRECTORY(src/libdynamind-gui)
 ADD_SUBDIRECTORY(src/dynamind-modelbuilder)
+ADD_SUBDIRECTORY(viewer_mapnik)
+
 #create menu entry in ubuntu
 IF(UNIX AND NOT WIN32)
     ADD_SUBDIRECTORY(data)
