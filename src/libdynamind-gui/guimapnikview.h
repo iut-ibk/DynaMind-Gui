@@ -24,6 +24,8 @@ public:
 public slots:
     void init_mapnik();
     void drawMap();
+    void setSystem(DM::System * sys);
+    void addLayer(QString layer);
     
 private:
     Ui::GUIMapnikView *ui;

@@ -27,6 +27,8 @@ GUIViewSelector::~GUIViewSelector()
 void GUIViewSelector::accept()
 {
     emit selected(ui->listWidget->currentItem()->text());
+
+    QDialog::accept();
 }
 
 

@@ -36,6 +36,13 @@ GUIMapnikView::GUIMapnikView(QWidget *parent, DM::System * sys) :
 {
     ui->setupUi(this);
 
+    std::string mapnik_dir("/usr/local/Cellar/mapnik/2.1.0/lib");
+    DM::Logger(DM::Debug) << " looking for 'shape.input' plugin in... " << mapnik_dir << "/mapnik/input/";
+    datasource_cache::instance()->register_datasources(mapnik_dir + "/mapnik/input/");
+    DM::Logger(DM::Debug) << " looking for DejaVuSans font in... " << mapnik_dir << "/mapnik/fonts/DejaVuSans.ttf";
+    freetype_engine::register_font(mapnik_dir + "/mapnik/fonts/DejaVuSans.ttf");
+
+    map_ = 0;
     if (!sys)
         return;
 
@@ -46,10 +53,13 @@ GUIMapnikView::GUIMapnikView(QWidget *parent, DM::System * sys) :
 GUIMapnikView::~GUIMapnikView()
 {
     delete ui;
+    delete map_;
 }
 
 void GUIMapnikView::paintEvent(QPaintEvent *ev)
 {
+    if(!sys_)
+        return;
     QPainter painter(this);
 
     painter.drawPixmap(QPoint(0, 0),pix_);
@@ -67,11 +77,9 @@ void GUIMapnikView::resizeEvent(QResizeEvent *event)
 void GUIMapnikView::init_mapnik() {
     if (!sys_)
         return;
-    std::string mapnik_dir("/usr/local/Cellar/mapnik/2.1.0/lib");
-    DM::Logger(DM::Debug) << " looking for 'shape.input' plugin in... " << mapnik_dir << "/mapnik/input/";
-    datasource_cache::instance()->register_datasources(mapnik_dir + "/mapnik/input/");
-    DM::Logger(DM::Debug) << " looking for DejaVuSans font in... " << mapnik_dir << "/mapnik/fonts/DejaVuSans.ttf";
-    freetype_engine::register_font(mapnik_dir + "/mapnik/fonts/DejaVuSans.ttf");
+
+    if (map_)
+        delete map_;
 
 
     map_ = new Map(this->width(),this->height());
@@ -116,6 +124,7 @@ void GUIMapnikView::init_mapnik() {
 
 }
 
+
 void GUIMapnikView::drawMap()
 {
     if (!sys_)
@@ -129,4 +138,15 @@ void GUIMapnikView::drawMap()
 
     QImage image((uchar*)buf.raw_data(),map_->width(),map_->height(),QImage::Format_ARGB32);
     pix_ = QPixmap::fromImage(image.rgbSwapped());
+}
+
+void GUIMapnikView::setSystem(DM::System * sys)
+{
+    this->sys_ = sys;
+    this->init_mapnik();
+    this->drawMap();
+}
+
+void GUIMapnikView::addLayer(QString layer)
+{
 }

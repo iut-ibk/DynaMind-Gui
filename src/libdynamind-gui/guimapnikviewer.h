@@ -22,6 +22,10 @@ public:
 private:
     Ui::GUIMapnikViewer *ui;
     DM::System * sys;
+
+public slots:
+    void on_actionAdd_Layer_triggered();
+
 };
 
 #endif // GUIMAPNIKVIEWER_H
