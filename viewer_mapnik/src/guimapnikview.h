@@ -1,7 +1,11 @@
 #ifndef GUIMAPNIKVIEW_H
 #define GUIMAPNIKVIEW_H
 
+
+//QT
 #include <QWidget>
+
+
 
 namespace DM {
     class System;
@@ -14,6 +18,8 @@ namespace Ui {
 class GUIMapnikView;
 }
 
+struct mapnik_private;
+
 class GUIMapnikView : public QWidget
 {
     Q_OBJECT
@@ -25,7 +31,9 @@ public slots:
     void init_mapnik();
     void drawMap();
     void setSystem(DM::System * sys);
-    void addLayer(QString layer);
+    void addLayer(QString dm_layer);
+    void editStyleDefintionGUI(QString layer);
+    void removeStyleDefinition(QString layer_name, QString stylename);
     
 private:
     Ui::GUIMapnikView *ui;
@@ -33,9 +41,20 @@ private:
     mapnik::Map * map_;
     DM::System * sys_;
 
+    mapnik_private * d;
+
+    /** return index of layer, if not found return value is -1*/
+    int getLayerIndex(std::string layer_name);
+
 protected:
     void paintEvent(QPaintEvent* ev);
     void resizeEvent ( QResizeEvent * event );
+
+signals:
+    void new_layer_added(QString);
+    void new_style_added(QString layer_name, QString style_name);
+
+
 
 };
 

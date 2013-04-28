@@ -1,7 +1,7 @@
 #ifndef SYSTEMMAPNIKFEATURESET_H
 #define SYSTEMMAPNIKFEATURESET_H
 
-#include <dmsystem.h>
+#include <dm.h>
 
 // mapnik
 #include <mapnik/datasource.hpp>
@@ -14,7 +14,7 @@
 class SystemMapnikFeatureset : public mapnik::Featureset
 {
 public:
-    SystemMapnikFeatureset(mapnik::box2d<double> const& box, std::string const& encoding, DM::System * sys);
+    SystemMapnikFeatureset(mapnik::box2d<double> const& box, std::string const& encoding, DM::System * sys, const DM::View & v);
 
     // desctructor
     virtual ~SystemMapnikFeatureset();
@@ -30,6 +30,9 @@ private:
     mapnik::context_ptr ctx_;
     DM::System* sys;
     std::vector<std::string> feature_uuids;
+    DM::View view;
+    void draw_faces(DM::Face *f,  mapnik::feature_ptr feature);
+    void draw_edges(DM::Edge *e,  mapnik::feature_ptr feature);
 
 };
 
