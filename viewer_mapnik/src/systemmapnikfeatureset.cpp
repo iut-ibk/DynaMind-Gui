@@ -9,14 +9,15 @@
 
 #include <dm.h>
 
-SystemMapnikFeatureset::SystemMapnikFeatureset(mapnik::box2d<double> const& box, std::string const& encoding, DM::System * sys)
+SystemMapnikFeatureset::SystemMapnikFeatureset(mapnik::box2d<double> const& box, std::string const& encoding, DM::System * sys, const DM::View & v)
     : box_(box),
       feature_id_(0),
       tr_(new mapnik::transcoder(encoding)),
       sys(sys),
+      view(v),
       ctx_(boost::make_shared<mapnik::context_type>())
 {
-    feature_uuids = sys->getUUIDs(DM::View("SUPERBLOCK", DM::FACE, DM::READ));
+    feature_uuids = sys->getUUIDs(view);
 
 
 }
@@ -67,28 +68,28 @@ mapnik::feature_ptr SystemMapnikFeatureset::next()
         // A feature usually will have just one geometry of a given type
         // but mapnik does support many geometries per feature of any type
         // so here we draw a line around the point
-*/
+        */
 
         std::string uuid = this->feature_uuids[feature_id_];
 
-        DM::Face * f = sys->getFace(uuid);
-
-        std::vector<DM::Node*> nodes = f->getNodePointers();
-
-        mapnik::geometry_type * polygon = new mapnik::geometry_type(mapnik::Polygon);
-        polygon->move_to(nodes[0]->getX(), nodes[0]->getY());
-        for (int i = 1; i < nodes.size(); i++)
-            polygon->line_to(nodes[i]->getX(), nodes[i]->getY());
-        polygon->line_to(nodes[0]->getX(), nodes[0]->getY());
-
 
         ++feature_id_;
-
-
         mapnik::feature_ptr feature(mapnik::feature_factory::create(ctx_,feature_id_));
-        feature->add_geometry(polygon);
 
-        std::string value_str = f->getAttribute("baujahr")->getString();
+        DM::Component * cmp = 0;
+
+        switch (view.getType()) {
+            case DM::FACE:
+                cmp = (DM::Component *)  sys->getFace(uuid);
+                draw_faces( (DM::Face*) cmp, feature);
+                break;
+            case DM::EDGE:
+                cmp = (DM::Component *) sys->getEdge(uuid);
+                draw_edges((DM::Edge*) cmp, feature);
+                break;
+        }
+
+        std::string value_str = cmp->getAttribute("baujahr")->getString();
 
         UnicodeString value = tr_->transcode(value_str.c_str());
         feature->put("baujahr", value);
@@ -98,4 +99,25 @@ mapnik::feature_ptr SystemMapnikFeatureset::next()
 
     // otherwise return an empty feature
     return mapnik::feature_ptr();
+}
+
+void SystemMapnikFeatureset::draw_faces(DM::Face * f, mapnik::feature_ptr feature)
+{
+    std::vector<DM::Node*> nodes = f->getNodePointers();
+    mapnik::geometry_type * polygon = new mapnik::geometry_type(mapnik::Polygon);
+    polygon->move_to(nodes[0]->getX(), nodes[0]->getY());
+    for (int i = 1; i < nodes.size(); i++)
+        polygon->line_to(nodes[i]->getX(), nodes[i]->getY());
+    polygon->line_to(nodes[0]->getX(), nodes[0]->getY());
+    feature->add_geometry(polygon);
+}
+
+
+void SystemMapnikFeatureset::draw_edges(DM::Edge *e, mapnik::feature_ptr feature)
+{
+    mapnik::geometry_type * line = new mapnik::geometry_type(mapnik::LineString);
+    line->move_to(e->getStartNode()->getX(), e->getStartNode()->getY());
+    line->line_to(e->getEndNode()->getX(), e->getEndNode()->getY());
+    feature->add_geometry(line);
+
 }

@@ -92,7 +92,7 @@ mapnik::featureset_ptr SystemMapnikWrapper::features(mapnik::query const& q) con
     // if the query box intersects our world extent then query for features
     if (extent_.intersects(q.get_bbox()))
     {
-        return boost::make_shared<SystemMapnikFeatureset>(q.get_bbox(),desc_.get_encoding(), sys);
+        return boost::make_shared<SystemMapnikFeatureset>(q.get_bbox(),desc_.get_encoding(), sys, this->view);
     }
 
     // otherwise return an empty featureset pointer

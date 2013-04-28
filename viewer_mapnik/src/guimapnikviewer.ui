@@ -17,12 +17,27 @@
    <layout class="QHBoxLayout" name="horizontalLayout">
     <item>
      <widget class="QTreeWidget" name="treeWidget">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="MinimumExpanding" vsizetype="Expanding">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="minimumSize">
+       <size>
+        <width>200</width>
+        <height>0</height>
+       </size>
+      </property>
       <property name="maximumSize">
        <size>
         <width>150</width>
         <height>16777215</height>
        </size>
       </property>
+      <attribute name="headerVisible">
+       <bool>false</bool>
+      </attribute>
       <column>
        <property name="text">
         <string notr="true">1</string>
@@ -64,10 +79,16 @@
     <bool>false</bool>
    </attribute>
    <addaction name="actionAdd_Layer"/>
+   <addaction name="actionEdit_Styles"/>
   </widget>
   <action name="actionAdd_Layer">
    <property name="text">
     <string>Add Layer</string>
+   </property>
+  </action>
+  <action name="actionEdit_Styles">
+   <property name="text">
+    <string>Edit Styles</string>
    </property>
   </action>
  </widget>

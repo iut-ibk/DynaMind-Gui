@@ -5,8 +5,9 @@
 #include <QPainter>
 
 //DM
-#include "systemmapnikwrapper.h"
 #include "dmlogger.h"
+#include "systemmapnikwrapper.h"
+#include <systemmapnikwrapper.h>
 
 //Mapnik
 #include <mapnik/map.hpp>
@@ -27,12 +28,20 @@
 #include <mapnik/config_error.hpp>
 #include <mapnik/load_map.hpp>
 
+#include "guistyledefinition.h"
+
+
 using namespace mapnik;
+
+struct mapnik_private {
+    QMap<QString,  boost::shared_ptr<SystemMapnikWrapper> > datasources_;
+};
 
 GUIMapnikView::GUIMapnikView(QWidget *parent, DM::System * sys) :
     sys_(sys),
     QWidget(parent),
-    ui(new Ui::GUIMapnikView)
+    ui(new Ui::GUIMapnikView),
+    d(new mapnik_private)
 {
     ui->setupUi(this);
 
@@ -54,6 +63,7 @@ GUIMapnikView::~GUIMapnikView()
 {
     delete ui;
     delete map_;
+    delete d;
 }
 
 void GUIMapnikView::paintEvent(QPaintEvent *ev)
@@ -88,40 +98,6 @@ void GUIMapnikView::init_mapnik() {
     DM::Logger(DM::Debug) << this->width();
     map_->set_background(color("white"));
 
-
-    // Provinces (polygon)
-    feature_type_style provpoly_style;
-    rule provpoly_rule_on;
-    provpoly_rule_on.append(stroke(color(0, 0, 0), 1));
-    provpoly_style.add_rule(provpoly_rule_on);
-
-    map_->insert_style("polygon",provpoly_style);
-
-
-    // Provinces (polygon)
-    feature_type_style polygon_style;
-
-    rule polygon_rule_on;
-    polygon_rule_on.set_filter((parse_expression("[baujahr] = '2000'")));
-    polygon_rule_on.append(polygon_symbolizer(color(0, 0, 0)));
-    polygon_style.add_rule(polygon_rule_on);
-    map_->insert_style("face",polygon_style);
-
-
-    {
-        parameters p;
-        p["type"]="dm";
-        p["view_name"]="SUPERBLOCK";
-        p["view_type"]= DM::FACE;
-
-        layer lyr("key");
-        boost::shared_ptr<SystemMapnikWrapper> ds(new SystemMapnikWrapper(p, true, sys_));
-        lyr.set_datasource(ds);
-        //lyr.add_style("polygon");
-        lyr.add_style("face");
-        map_->addLayer(lyr);
-    }
-
 }
 
 
@@ -147,6 +123,89 @@ void GUIMapnikView::setSystem(DM::System * sys)
     this->drawMap();
 }
 
-void GUIMapnikView::addLayer(QString layer)
+void GUIMapnikView::addLayer(QString dm_layer)
 {
+    parameters p;
+    p["type"]="dm";
+    p["view_name"]= dm_layer.toStdString();
+    p["view_type"]= this->sys_->getViewDefinition(dm_layer.toStdString())->getType();
+    boost::shared_ptr<SystemMapnikWrapper> ds(new SystemMapnikWrapper(p, true, sys_));
+
+    emit new_layer_added(dm_layer);
+
+    d->datasources_[dm_layer] = ds;
+
+    //Default symbolizer Edge
+    feature_type_style edges_style;
+    rule edge_rule_on;
+    edge_rule_on.append(stroke(color(0, 0, 0), 1));
+    edges_style.add_rule(edge_rule_on);
+    map_->insert_style("default_edge",edges_style);
+
+    emit new_style_added(dm_layer, "default_edge");
+
+    //Default symbolizer Polygon
+    feature_type_style polygon_style;
+    rule polygon_rule_on;
+    polygon_rule_on.append(polygon_symbolizer(color(211, 211, 211)));
+    polygon_style.add_rule(polygon_rule_on);
+    map_->insert_style("default_face",polygon_style);
+    emit new_style_added(dm_layer, "default_face");
+
+    //Add default styles
+    layer lyr(dm_layer.toStdString());
+    lyr.set_datasource(ds);
+    lyr.add_style("default_edge");
+    lyr.add_style("default_face");
+    map_->addLayer(lyr);
+
+    update();
 }
+
+void GUIMapnikView::editStyleDefintionGUI(QString layer_name)
+{
+    std::vector<layer> layers = map_->layers();
+
+    QStringList styleNames;
+    foreach (layer l, layers) {
+        if (l.name() == layer_name.toStdString()) {
+            std::vector<std::string> styles = l.styles();
+            foreach (std::string s, styles)
+                styleNames << QString::fromStdString(s);
+            break;
+        }
+    }
+    GUIStyleDefinition * gsd = new GUIStyleDefinition(layer_name, styleNames, this);
+    connect (gsd, SIGNAL(removeStyle(QString,QString)), this, SLOT(removeStyleDefinition(QString,QString)));
+    gsd->show();
+}
+
+void GUIMapnikView::removeStyleDefinition(QString layer_name, QString stylename)
+{
+    int index_layer = this->getLayerIndex(layer_name.toStdString());
+
+    layer currentL = map_->getLayer(index_layer);
+
+    layer new_layer(layer_name.toStdString());
+    foreach (std::string cs, currentL.styles()) {
+        if (cs == stylename.toStdString()) continue;
+        new_layer.add_style(cs);
+    }
+
+    map_->removeLayer(index_layer);
+    map_->addLayer(new_layer);
+
+    DM::Logger(DM::Debug) << "Remove Layer";
+
+}
+
+int GUIMapnikView::getLayerIndex(string layer_name)
+{
+    std::vector<layer> layers = map_->layers();
+    for (int i = 0; i < layers.size(); i++) {
+        if (layers[i].name() == layer_name) return i;
+    }
+    return -1;
+}
+
+//polygon_rule_on.set_filter((parse_expression("[baujahr] = '2000'")));

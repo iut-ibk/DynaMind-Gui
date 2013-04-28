@@ -24,7 +24,12 @@ private:
     DM::System * sys;
 
 public slots:
+    //Toolbar
     void on_actionAdd_Layer_triggered();
+    void on_actionEdit_Styles_triggered();
+
+    void addNewLayer(QString name);
+    void addNewStyle(QString layername, QString nameOfStyle);
 
 };
 
