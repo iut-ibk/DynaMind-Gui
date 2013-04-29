@@ -15,7 +15,8 @@ GUIMapnikViewer::GUIMapnikViewer(QWidget *parent, DM::System * sys) :
 {
     ui->setupUi(this);
     ui->widget_mapnik->setSystem(sys);
-    ui->treeWidget->setColumnCount(2);
+    ui->treeWidget->setColumnCount(1);
+
 
     connect(ui->widget_mapnik, SIGNAL(new_layer_added(QString)), this, SLOT(addNewLayer(QString)));
     connect(ui->widget_mapnik, SIGNAL(new_style_added(QString,QString)), this, SLOT(addNewStyle(QString,QString)));
@@ -55,7 +56,7 @@ void GUIMapnikViewer::addNewLayer(QString name)
     QStringList items;
     items << name;
     QTreeWidgetItem * item = new QTreeWidgetItem((QTreeWidgetItem*)0, items);
-
+    item->setExpanded(true);
     ui->treeWidget->addTopLevelItem(item);
 }
 

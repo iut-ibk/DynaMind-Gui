@@ -208,6 +208,7 @@ void GUIMapnikView::editStyleDefintionGUI(QString layer_name)
         }
     }
     //Get View embended in the system
+    if (!sys_->getViewDefinition(layer_name.toStdString())) return;
     DM::Component * cmp = sys_->getViewDefinition(layer_name.toStdString())->getDummyComponent();
     std::map<std::string, DM::Attribute*> attrs_map =  cmp->getAllAttributes();
     QStringList attribute_list;
