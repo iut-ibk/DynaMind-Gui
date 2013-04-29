@@ -30,6 +30,7 @@ public slots:
 
     void addNewLayer(QString name);
     void addNewStyle(QString layername, QString nameOfStyle);
+    void removeStyle(QString layername, QString nameOfStyle);
 
 };
 

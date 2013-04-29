@@ -159,7 +159,7 @@ void GUIMapnikView::addLayer(QString dm_layer)
     lyr.add_style("default_face");
     map_->addLayer(lyr);
 
-    update();
+   this->drawMap();
 }
 
 void GUIMapnikView::editStyleDefintionGUI(QString layer_name)
@@ -192,17 +192,22 @@ void GUIMapnikView::removeStyleDefinition(QString layer_name, QString stylename)
         new_layer.add_style(cs);
     }
 
+    new_layer.set_datasource(currentL.datasource());
     map_->removeLayer(index_layer);
     map_->addLayer(new_layer);
 
     DM::Logger(DM::Debug) << "Remove Layer";
+
+    emit removedStyle(layer_name, stylename);
+
+    this->drawMap();
 
 }
 
 int GUIMapnikView::getLayerIndex(string layer_name)
 {
     std::vector<layer> layers = map_->layers();
-    for (int i = 0; i < layers.size(); i++) {
+    for (uint i = 0; i < layers.size(); i++) {
         if (layers[i].name() == layer_name) return i;
     }
     return -1;
