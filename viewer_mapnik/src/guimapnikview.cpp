@@ -3,6 +3,8 @@
 
 //QT
 #include <QPainter>
+#include <QColor>
+#include <QRgb>
 
 //DM
 #include "dmlogger.h"
@@ -105,15 +107,29 @@ void GUIMapnikView::drawMap()
 {
     if (!sys_)
         return;
-    map_->set_height(this->height());
-    map_->set_width(this->width());
-    map_->zoom_all();
-    image_32 buf(map_->width(),map_->height());
-    agg_renderer<image_32> ren(*map_,buf);
-    ren.apply();
+    try {
+        map_->set_height(this->height());
+        map_->set_width(this->width());
+        map_->zoom_all();
+        image_32 buf(map_->width(),map_->height());
+        agg_renderer<image_32> ren(*map_,buf);
+        ren.apply();
 
-    QImage image((uchar*)buf.raw_data(),map_->width(),map_->height(),QImage::Format_ARGB32);
-    pix_ = QPixmap::fromImage(image.rgbSwapped());
+        QImage image((uchar*)buf.raw_data(),map_->width(),map_->height(),QImage::Format_ARGB32);
+        pix_ = QPixmap::fromImage(image.rgbSwapped());
+    }
+    catch ( const mapnik::config_error & ex )
+    {
+        DM::Logger(DM::Error) << "### Configuration error: " << ex.what();
+    }
+    catch ( const std::exception & ex )
+    {
+        DM::Logger(DM::Error) <<  "### std::exception: " << ex.what();
+    }
+    catch ( ... )
+    {
+        DM::Logger(DM::Error) <<  "### Unknown exception.";
+    }
 }
 
 void GUIMapnikView::setSystem(DM::System * sys)
@@ -125,41 +141,57 @@ void GUIMapnikView::setSystem(DM::System * sys)
 
 void GUIMapnikView::addLayer(QString dm_layer)
 {
-    parameters p;
-    p["type"]="dm";
-    p["view_name"]= dm_layer.toStdString();
-    p["view_type"]= this->sys_->getViewDefinition(dm_layer.toStdString())->getType();
-    boost::shared_ptr<SystemMapnikWrapper> ds(new SystemMapnikWrapper(p, true, sys_));
+    try {
+        parameters p;
+        p["type"]="dm";
+        p["view_name"]= dm_layer.toStdString();
+        p["view_type"]= this->sys_->getViewDefinition(dm_layer.toStdString())->getType();
+        boost::shared_ptr<SystemMapnikWrapper> ds(new SystemMapnikWrapper(p, true, sys_));
 
-    emit new_layer_added(dm_layer);
+        emit new_layer_added(dm_layer);
 
-    d->datasources_[dm_layer] = ds;
+        d->datasources_[dm_layer] = ds;
 
-    //Default symbolizer Edge
-    feature_type_style edges_style;
-    rule edge_rule_on;
-    edge_rule_on.append(stroke(color(0, 0, 0), 1));
-    edges_style.add_rule(edge_rule_on);
-    map_->insert_style("default_edge",edges_style);
+        //Default symbolizer Edge
+        feature_type_style edges_style;
+        rule edge_rule_on;
+        edge_rule_on.append(stroke(color(0, 0, 0), 1));
+        edges_style.add_rule(edge_rule_on);
+        map_->insert_style("default_edge",edges_style);
 
-    emit new_style_added(dm_layer, "default_edge");
+        emit new_style_added(dm_layer, "default_edge");
 
-    //Default symbolizer Polygon
-    feature_type_style polygon_style;
-    rule polygon_rule_on;
-    polygon_rule_on.append(polygon_symbolizer(color(211, 211, 211)));
-    polygon_style.add_rule(polygon_rule_on);
-    map_->insert_style("default_face",polygon_style);
-    emit new_style_added(dm_layer, "default_face");
+        //Default symbolizer Polygon
+        feature_type_style polygon_style;
+        rule polygon_rule_on;
+        polygon_rule_on.append(polygon_symbolizer(color(211, 211, 211)));
+        polygon_style.add_rule(polygon_rule_on);
+        map_->insert_style("default_face",polygon_style);
+        emit new_style_added(dm_layer, "default_face");
 
-    //Add default styles
-    layer lyr(dm_layer.toStdString());
-    lyr.set_datasource(ds);
-    lyr.add_style("default_edge");
-    lyr.add_style("default_face");
-    map_->addLayer(lyr);
+        //Add default styles
+        layer lyr(dm_layer.toStdString());
+        lyr.set_datasource(ds);
+        lyr.add_style("default_edge");
+        lyr.add_style("default_face");
 
-   this->drawMap();
+
+        map_->addLayer(lyr);
+    }
+    catch ( const mapnik::config_error & ex )
+    {
+        DM::Logger(DM::Error) << "### Configuration error: " << ex.what();
+    }
+    catch ( const std::exception & ex )
+    {
+        DM::Logger(DM::Error) <<  "### std::exception: " << ex.what();
+    }
+    catch ( ... )
+    {
+        DM::Logger(DM::Error) <<  "### Unknown exception.";
+    }
+
+    this->drawMap();
 }
 
 void GUIMapnikView::editStyleDefintionGUI(QString layer_name)
@@ -175,8 +207,18 @@ void GUIMapnikView::editStyleDefintionGUI(QString layer_name)
             break;
         }
     }
-    GUIStyleDefinition * gsd = new GUIStyleDefinition(layer_name, styleNames, this);
+    //Get View embended in the system
+    DM::Component * cmp = sys_->getViewDefinition(layer_name.toStdString())->getDummyComponent();
+    std::map<std::string, DM::Attribute*> attrs_map =  cmp->getAllAttributes();
+    QStringList attribute_list;
+    for (std::map<std::string, DM::Attribute*>::const_iterator it = attrs_map.begin();
+         it != attrs_map.end();
+         ++it) {
+        attribute_list.append(QString::fromStdString(it->first));
+    }
+    GUIStyleDefinition * gsd = new GUIStyleDefinition(layer_name, styleNames, attribute_list, this);
     connect (gsd, SIGNAL(removeStyle(QString,QString)), this, SLOT(removeStyleDefinition(QString,QString)));
+    connect (gsd, SIGNAL(newStyle(style_struct)), this, SLOT(addNewStyle(style_struct)));
     gsd->show();
 }
 
@@ -198,9 +240,71 @@ void GUIMapnikView::removeStyleDefinition(QString layer_name, QString stylename)
 
     DM::Logger(DM::Debug) << "Remove Layer";
 
+    this->drawMap();
+
     emit removedStyle(layer_name, stylename);
+}
+
+void GUIMapnikView::addNewStyle(style_struct ss)
+{
+    try {
+        feature_type_style new_style;
+        rule new_rule_on;
+        if (ss.symbolizer == "PolygonSymbolizer") {
+            new_rule_on.append(polygon_symbolizer(color(ss.color.red(), ss.color.green(), ss.color.blue())));
+        }
+        if (ss.symbolizer == "LineSymbolizer") {
+            new_rule_on.append(stroke(color(ss.color.red(), ss.color.green(), ss.color.blue()), ss.linewidth));
+        }
+        if (ss.symbolizer == "BuildingSymbolizer"){
+            new_rule_on.append(building_symbolizer(color(ss.color.red(), ss.color.green(), ss.color.blue()),parse_expression(ss.buildingHeight.toStdString())));
+        }
+        if (!ss.filter.isEmpty()) new_rule_on.set_filter(parse_expression(ss.filter.toStdString()));
+        new_style.add_rule(new_rule_on);
+        new_style.set_opacity(ss.opacity);
+
+
+        map_->insert_style(ss.name.toStdString(),new_style);
+
+        //update layer;
+
+        int index_layer = this->getLayerIndex(ss.layer.toStdString());
+        layer l = map_->getLayer(index_layer);
+        l.add_style(ss.name.toStdString());
+        map_->removeLayer(index_layer);
+        map_->addLayer(l);
+    }
+    catch ( const mapnik::config_error & ex )
+    {
+        DM::Logger(DM::Error) << "### Configuration error: " << ex.what();
+    }
+    catch ( const std::exception & ex )
+    {
+        DM::Logger(DM::Error) <<  "### std::exception: " << ex.what();
+    }
+    catch ( ... )
+    {
+        DM::Logger(DM::Error) <<  "### Unknown exception.";
+    }
 
     this->drawMap();
+
+    emit new_style_added(ss.layer, ss.name);
+}
+
+void GUIMapnikView::saveToPicture(unsigned width, unsigned height, QString filename)
+{
+    if (!sys_)
+        return;
+    map_->set_width(width);
+    map_->set_height(height);
+    map_->zoom_all();
+    image_32 buf(map_->width(),map_->height());
+    agg_renderer<image_32> ren(*map_,buf);
+    ren.apply();
+
+    save_to_file(buf,filename.toStdString(),"png");
+
 
 }
 

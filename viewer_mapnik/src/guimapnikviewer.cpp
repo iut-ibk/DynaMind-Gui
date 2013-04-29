@@ -3,7 +3,7 @@
 
 #include "guimapnikviewer.h"
 #include "guiviewselector.h"
-
+#include "guisavefiletopng.h"
 
 #include "dmsystem.h"
 #include "dmlogger.h"
@@ -38,6 +38,16 @@ void GUIMapnikViewer::on_actionEdit_Styles_triggered()
 {
     QString layer (ui->treeWidget->currentItem()->text(0));
     ui->widget_mapnik->editStyleDefintionGUI(layer);
+
+}
+
+void GUIMapnikViewer::on_actionSave_to_picture_triggered()
+{
+
+    GUISaveFileToPNG * gsf = new GUISaveFileToPNG(this);
+    connect(gsf, SIGNAL(choosen_file_options(uint,uint,QString)), ui->widget_mapnik, SLOT(saveToPicture(uint,uint,QString)));
+    gsf->show();
+    //ui->widget_mapnik->saveToPicture();
 }
 
 void GUIMapnikViewer::addNewLayer(QString name)
