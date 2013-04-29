@@ -6,6 +6,7 @@
 
 
 #include "dmsystem.h"
+#include "dmlogger.h"
 
 GUIMapnikViewer::GUIMapnikViewer(QWidget *parent, DM::System * sys) :
     QMainWindow(parent),
@@ -18,6 +19,7 @@ GUIMapnikViewer::GUIMapnikViewer(QWidget *parent, DM::System * sys) :
 
     connect(ui->widget_mapnik, SIGNAL(new_layer_added(QString)), this, SLOT(addNewLayer(QString)));
     connect(ui->widget_mapnik, SIGNAL(new_style_added(QString,QString)), this, SLOT(addNewStyle(QString,QString)));
+    connect(ui->widget_mapnik, SIGNAL(removedStyle(QString,QString)), this, SLOT(removeStyle(QString,QString)));
 }
 
 GUIMapnikViewer::~GUIMapnikViewer()
@@ -53,4 +55,15 @@ void GUIMapnikViewer::addNewStyle(QString layername, QString nameOfStyle)
     QStringList items;
     items << nameOfStyle;
     QTreeWidgetItem * item = new QTreeWidgetItem(root_item, items);
+}
+
+void GUIMapnikViewer::removeStyle(QString layername, QString nameOfStyle)
+{
+    QTreeWidgetItem * root_item = ui->treeWidget->findItems(layername, Qt::MatchExactly, 0)[0];
+    QTreeWidgetItem * item_delete = NULL;
+    for (int i = 0; i < root_item->childCount(); i++) {
+        if (root_item->child(i)->text(0) == nameOfStyle) item_delete = root_item->child(i);
+    }
+
+    if (item_delete) delete item_delete;
 }

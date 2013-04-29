@@ -54,6 +54,8 @@ signals:
     void new_layer_added(QString);
     void new_style_added(QString layer_name, QString style_name);
 
+    void removedStyle(QString layer_name, QString stylename);
+
 
 
 };
