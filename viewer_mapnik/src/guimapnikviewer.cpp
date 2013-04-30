@@ -17,7 +17,6 @@ GUIMapnikViewer::GUIMapnikViewer(QWidget *parent, DM::System * sys) :
     ui->widget_mapnik->setSystem(sys);
     ui->treeWidget->setColumnCount(1);
 
-
     connect(ui->widget_mapnik, SIGNAL(new_layer_added(QString)), this, SLOT(addNewLayer(QString)));
     connect(ui->widget_mapnik, SIGNAL(new_style_added(QString,QString)), this, SLOT(addNewStyle(QString,QString)));
     connect(ui->widget_mapnik, SIGNAL(removedStyle(QString,QString)), this, SLOT(removeStyle(QString,QString)));
@@ -48,8 +47,8 @@ void GUIMapnikViewer::on_actionSave_to_picture_triggered()
     GUISaveFileToPNG * gsf = new GUISaveFileToPNG(this);
     connect(gsf, SIGNAL(choosen_file_options(uint,uint,QString)), ui->widget_mapnik, SLOT(saveToPicture(uint,uint,QString)));
     gsf->show();
-    //ui->widget_mapnik->saveToPicture();
 }
+
 
 void GUIMapnikViewer::addNewLayer(QString name)
 {
