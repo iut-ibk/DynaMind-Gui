@@ -5,6 +5,8 @@
 #include <QPainter>
 #include <QColor>
 #include <QRgb>
+#include <QWheelEvent>
+#include <QMouseEvent>
 
 //DM
 #include "dmlogger.h"
@@ -43,7 +45,10 @@ GUIMapnikView::GUIMapnikView(QWidget *parent, DM::System * sys) :
     sys_(sys),
     QWidget(parent),
     ui(new Ui::GUIMapnikView),
-    d(new mapnik_private)
+    d(new mapnik_private),
+    zoom_level(1.),
+    pan(0,0),
+    startPos(0,0)
 {
     ui->setupUi(this);
 
@@ -53,12 +58,15 @@ GUIMapnikView::GUIMapnikView(QWidget *parent, DM::System * sys) :
     DM::Logger(DM::Debug) << " looking for DejaVuSans font in... " << mapnik_dir << "/mapnik/fonts/DejaVuSans.ttf";
     freetype_engine::register_font(mapnik_dir + "/mapnik/fonts/DejaVuSans.ttf");
 
-    map_ = 0;
-    if (!sys)
-        return;
+    connect(this, SIGNAL(zoom_in(double)), this, SLOT(increaseZoomLevel(double)));
+    connect(this, SIGNAL(zoom_out(double)), this, SLOT(decreaseZoomLevel(double)));
 
-    this->init_mapnik();
-    this->drawMap();
+    pan = QPoint(this->height()/2, this->width()/2);
+
+    map_ = 0;
+
+
+
 }
 
 GUIMapnikView::~GUIMapnikView()
@@ -86,6 +94,36 @@ void GUIMapnikView::resizeEvent(QResizeEvent *event)
     QWidget::resizeEvent(event);
 }
 
+void GUIMapnikView::wheelEvent(QWheelEvent *ev)
+{
+    if (ev->delta() > 0) {
+        double factor = ev->delta() / 18. / 15.;
+        emit zoom_out(factor);
+
+    } else {
+        double factor = ev->delta() / 18. / 15. * -1.;
+        emit zoom_in(factor);
+
+    }
+
+    ev->accept();
+}
+
+void GUIMapnikView::mousePressEvent(QMouseEvent *ev)
+{
+    startPos = ev->pos();
+}
+
+void GUIMapnikView::mouseMoveEvent(QMouseEvent *ev)
+{
+
+    this->pan += (startPos - ev->pos()) * this->zoom_level;
+    this->drawMap();
+    startPos = ev->pos();
+    update();
+}
+
+
 void GUIMapnikView::init_mapnik() {
     if (!sys_)
         return;
@@ -102,7 +140,6 @@ void GUIMapnikView::init_mapnik() {
 
 }
 
-
 void GUIMapnikView::drawMap()
 {
     if (!sys_)
@@ -111,6 +148,8 @@ void GUIMapnikView::drawMap()
         map_->set_height(this->height());
         map_->set_width(this->width());
         map_->zoom_all();
+        map_->pan(pan.x(), pan.y());
+        map_->zoom(this->zoom_level);
         image_32 buf(map_->width(),map_->height());
         agg_renderer<image_32> ren(*map_,buf);
         ren.apply();
@@ -175,8 +214,10 @@ void GUIMapnikView::addLayer(QString dm_layer)
         lyr.add_style("default_edge");
         lyr.add_style("default_face");
 
-
         map_->addLayer(lyr);
+
+        this->drawMap();
+        update();
     }
     catch ( const mapnik::config_error & ex )
     {
@@ -300,6 +341,8 @@ void GUIMapnikView::saveToPicture(unsigned width, unsigned height, QString filen
     map_->set_width(width);
     map_->set_height(height);
     map_->zoom_all();
+    map_->pan(pan.x(), pan.y());
+    map_->zoom(this->zoom_level);
     image_32 buf(map_->width(),map_->height());
     agg_renderer<image_32> ren(*map_,buf);
     ren.apply();
@@ -307,6 +350,20 @@ void GUIMapnikView::saveToPicture(unsigned width, unsigned height, QString filen
     save_to_file(buf,filename.toStdString(),"png");
 
 
+}
+
+void GUIMapnikView::increaseZoomLevel(double factor)
+{
+    this->zoom_level /= (1.+(0.2*factor));
+    this->drawMap();
+    update();
+}
+
+void GUIMapnikView::decreaseZoomLevel(double factor)
+{
+    this->zoom_level *= (1.+(0.2*factor));
+    this->drawMap();
+    update();
 }
 
 int GUIMapnikView::getLayerIndex(string layer_name)
