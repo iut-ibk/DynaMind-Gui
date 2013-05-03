@@ -367,7 +367,7 @@ void ModelNode::contextMenuEvent(QGraphicsSceneContextMenuEvent *event) {
     if (this->getDMModel()->isDebugMode())
         a_module_release = menu.addAction("ReleaseMode");
     else
-        a_module_debug = menu.addAction("DebugMode");    
+        a_module_debug = menu.addAction("DebugMode");
     QMenu * GroupMenu =     menu.addMenu("Groups");
 
     a_viewData->setEnabled(this->getDMModel()->getOutPorts().size() > 0);
@@ -522,8 +522,10 @@ void ModelNode::setResetModule()
 
 void ModelNode::view2DViewer()
 {
+    std::vector<DM::Port*> ports = this->getDMModel()->getOutPorts();
 
-    DM::Port *p = this->getDMModel()->getOutPorts()[0];
+    if (!ports.size()) return;
+    DM::Port *p = ports[0];
     DM::System *system = this->getDMModel()->getData(p->getLinkedDataName());
 
     viewer2d_prototype vw(system);

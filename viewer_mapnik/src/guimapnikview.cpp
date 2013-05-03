@@ -69,6 +69,11 @@ GUIMapnikView::GUIMapnikView(QWidget *parent, DM::System * sys) :
 
 }
 
+QString GUIMapnikView::getFilterForStyle(QString style)
+{
+    return this->styles_structs[style].filter;
+}
+
 GUIMapnikView::~GUIMapnikView()
 {
     delete ui;
@@ -178,7 +183,30 @@ void GUIMapnikView::setSystem(DM::System * sys)
     this->drawMap();
 }
 
-void GUIMapnikView::addLayer(QString dm_layer)
+void GUIMapnikView::addDefaultLayer(layer & lyr, QString dm_layer)
+{
+    //Default symbolizer Edge
+    feature_type_style edges_style;
+    rule edge_rule_on;
+    edge_rule_on.append(stroke(color(0, 0, 0), 1));
+    edges_style.add_rule(edge_rule_on);
+    map_->insert_style("default_edge",edges_style);
+
+    emit new_style_added(dm_layer, "default_edge");
+
+    //Default symbolizer Polygon
+    feature_type_style polygon_style;
+    rule polygon_rule_on;
+    polygon_rule_on.append(polygon_symbolizer(color(211, 211, 211)));
+    polygon_style.add_rule(polygon_rule_on);
+    map_->insert_style("default_face",polygon_style);
+    emit new_style_added(dm_layer, "default_face");
+
+    lyr.add_style("default_edge");
+    lyr.add_style("default_face");
+}
+
+void GUIMapnikView::addLayer(QString dm_layer, bool withdefault)
 {
     try {
         parameters p;
@@ -191,28 +219,11 @@ void GUIMapnikView::addLayer(QString dm_layer)
 
         d->datasources_[dm_layer] = ds;
 
-        //Default symbolizer Edge
-        feature_type_style edges_style;
-        rule edge_rule_on;
-        edge_rule_on.append(stroke(color(0, 0, 0), 1));
-        edges_style.add_rule(edge_rule_on);
-        map_->insert_style("default_edge",edges_style);
-
-        emit new_style_added(dm_layer, "default_edge");
-
-        //Default symbolizer Polygon
-        feature_type_style polygon_style;
-        rule polygon_rule_on;
-        polygon_rule_on.append(polygon_symbolizer(color(211, 211, 211)));
-        polygon_style.add_rule(polygon_rule_on);
-        map_->insert_style("default_face",polygon_style);
-        emit new_style_added(dm_layer, "default_face");
-
         //Add default styles
         layer lyr(dm_layer.toStdString());
         lyr.set_datasource(ds);
-        lyr.add_style("default_edge");
-        lyr.add_style("default_face");
+
+        if (withdefault) addDefaultLayer(lyr, dm_layer);
 
         map_->addLayer(lyr);
 
@@ -302,19 +313,26 @@ void GUIMapnikView::addNewStyle(style_struct ss)
             new_rule_on.append(building_symbolizer(color(ss.color.red(), ss.color.green(), ss.color.blue()),parse_expression(ss.buildingHeight.toStdString())));
         }
         if (!ss.filter.isEmpty()) new_rule_on.set_filter(parse_expression(ss.filter.toStdString()));
+
         new_style.add_rule(new_rule_on);
         new_style.set_opacity(ss.opacity);
-
 
         map_->insert_style(ss.name.toStdString(),new_style);
 
         //update layer;
 
         int index_layer = this->getLayerIndex(ss.layer.toStdString());
+        if (index_layer == -1){
+            DM::Logger(DM::Error) << ss.layer.toStdString() << " doesn't exist";
+            return;
+        }
         layer l = map_->getLayer(index_layer);
         l.add_style(ss.name.toStdString());
         map_->removeLayer(index_layer);
         map_->addLayer(l);
+
+
+        this->styles_structs[ss.name] = ss;
     }
     catch ( const mapnik::config_error & ex )
     {
@@ -366,6 +384,143 @@ void GUIMapnikView::decreaseZoomLevel(double factor)
     update();
 }
 
+std::string GUIMapnikView::save_style_to_file()
+{
+
+    std::stringstream out;
+    //Write Map
+    {
+        boost::optional<color> bg = map_->background();
+
+        out << "<Map ";
+        if (!bg) {
+            out << "background-color=\""
+                << "rgb("
+                << (*bg).red() << ","
+                << (*bg).green() << ","
+                << (*bg).blue() << ")\" ";
+        }
+        out << "srs=\""
+            << map_->srs()
+            << "\">\n";
+    }
+
+    //Write Styles
+    typedef std::map<std::string,feature_type_style> style_map;
+    for (style_map::const_iterator it = map_->styles().begin(); it != map_->styles().end(); it++) {
+        feature_type_style sft = it->second;
+        out << "\t";
+        out  << "<Style name =\""
+             << it->first
+             << "\" "
+             << "opacity=\""
+             << sft.get_opacity() <<"\">"
+             << "\n";
+
+        foreach (rule r, sft.get_rules()) {
+            out << "\t\t";
+            out  << "<Rule>\n";
+            foreach (symbolizer s, r.get_symbolizers()) {
+                out << "\t\t\t";
+                if  ((s.type())  == typeid(line_symbolizer))  {
+                    line_symbolizer ls (boost::get<line_symbolizer>(s));
+                    color c = ls.get_stroke().get_color();
+                    out << "<LineSymbolizer stroke=\"";
+                    out << "rgb("
+                        << c.red() << ","
+                        << c.green() << ","
+                        << c.blue() << ")\" ";
+                    out << "stroke-width=\""
+                        << ls.get_stroke().get_width();
+                    out << "\"/>\n";
+                }
+                if  ((s.type())  == typeid(polygon_symbolizer))  {
+                    polygon_symbolizer ps (boost::get<polygon_symbolizer>(s));
+                    color c = ps.get_fill();
+                    out << "<PolygonSymbolizer fill=\"";
+                    out << "rgb("
+                        << c.red() << ","
+                        << c.green() << ","
+                        << c.blue() << ")\""
+                        << "/>\n";
+                }
+                if  ((s.type())  == typeid(building_symbolizer))  {
+                    building_symbolizer ps (boost::get<building_symbolizer>(s));
+                    color c = ps.get_fill();
+                    out << "<BuildingSymbolizer fill=\"";
+                    out << "rgb("
+                        << c.red() << ","
+                        << c.green() << ","
+                        << c.blue() << ")\" ";
+                    out << "height=\""
+                        << this->styles_structs[QString::fromStdString(it->first)].buildingHeight.toStdString()
+                        << "\"/>\n";
+                }
+                out << "\t\t";
+                out  << "</Rule>\n";
+            }
+
+            //Replace <> in filter
+            QString filter = this->getFilterForStyle(QString::fromStdString(it->first));
+            filter.replace(">", "&gt;");
+            filter.replace("<", "&lt;");
+            out << "<Filter value=\""
+                << filter.toStdString()
+                << "\"/>\n";
+
+            out << "\t";
+            out  << "</Style>\n";
+
+        }
+
+    }
+
+
+    //Write Layers
+    out << "\t";
+    {
+        foreach (layer l, map_->layers()) {
+            out << "<Layer name=\""
+                << l.name() << "\""
+                << " srs=\""
+                << l.srs()
+                << "\">\n";
+            foreach (std::string n, l.styles()) {
+                out << "\t\t";
+                out << "<Stylename";
+                out << " name=\"style\">";
+                out << n;
+                out << "</Stylename>\n";
+            }
+
+            boost::shared_ptr<SystemMapnikWrapper> d = boost::static_pointer_cast<SystemMapnikWrapper>(l.datasource());
+            out << "\t\t";
+            out << "<Datasource>";
+            out << "\n\t\t\t";
+            out << "<Parameter name=\"type\">";
+            out << d->getSourceType();
+            out << "</Parameter>";
+            out << "\n\t\t\t";
+            out << "<Parameter name=\"view_name\">";
+            out << d->getViewName();
+            out << "</Parameter>";
+            out << "\n\t\t\t";
+            out << "<Parameter name=\"viewtype\">";
+            out << d->getViewType();
+            out << "</Parameter>\n";
+            out << "\t\t";
+            out << "</Datasource>\n";
+        }
+        out << "\t";
+        out << "</Layer>\n";
+    }
+
+    out << "</Map>\n";
+
+    return out.str();
+}
+
+
 int GUIMapnikView::getLayerIndex(string layer_name)
 {
     std::vector<layer> layers = map_->layers();
@@ -374,5 +529,7 @@ int GUIMapnikView::getLayerIndex(string layer_name)
     }
     return -1;
 }
+
+
 
 //polygon_rule_on.set_filter((parse_expression("[baujahr] = '2000'")));

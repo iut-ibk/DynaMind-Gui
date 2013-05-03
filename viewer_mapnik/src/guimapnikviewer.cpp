@@ -4,6 +4,9 @@
 #include "guimapnikviewer.h"
 #include "guiviewselector.h"
 #include "guisavefiletopng.h"
+#include "mapnikstylereader.h"
+
+#include <QFileDialog>
 
 #include "dmsystem.h"
 #include "dmlogger.h"
@@ -47,6 +50,38 @@ void GUIMapnikViewer::on_actionSave_to_picture_triggered()
     GUISaveFileToPNG * gsf = new GUISaveFileToPNG(this);
     connect(gsf, SIGNAL(choosen_file_options(uint,uint,QString)), ui->widget_mapnik, SLOT(saveToPicture(uint,uint,QString)));
     gsf->show();
+}
+
+void GUIMapnikViewer::on_actionSaveStyle_triggered()
+{
+    QString fileName = QFileDialog::getSaveFileName(this,
+                                                    tr("Save Style File"));
+    if (fileName.isEmpty()) {
+        return;
+    }
+    if (!fileName.contains(".sty"))
+        fileName+=".sty";
+
+    QFile file(fileName);
+    file.open(QIODevice::WriteOnly | QIODevice::Text);
+    QTextStream out(&file);
+    out << QString::fromStdString(ui->widget_mapnik->save_style_to_file());
+    file.close();
+
+}
+
+void GUIMapnikViewer::on_actionLoad_style_triggered()
+{
+
+
+    QString fileName = QFileDialog::getOpenFileName(this,
+                                                    tr("Open Style File"), "", tr("Style Files (*.sty)"));
+
+    if (fileName.isEmpty())
+        return;
+
+
+    MapnikStyleReader mr(fileName, this->ui->widget_mapnik);
 }
 
 
