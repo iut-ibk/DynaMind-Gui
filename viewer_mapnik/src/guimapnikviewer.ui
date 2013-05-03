@@ -51,6 +51,8 @@
    <addaction name="actionAdd_Layer"/>
    <addaction name="actionEdit_Styles"/>
    <addaction name="actionSave_to_picture"/>
+   <addaction name="actionSaveStyle"/>
+   <addaction name="actionLoad_style"/>
   </widget>
   <widget class="QDockWidget" name="dockWidget">
    <property name="minimumSize">
@@ -110,6 +112,16 @@
   <action name="actionSave_to_picture">
    <property name="text">
     <string>Save to picture</string>
+   </property>
+  </action>
+  <action name="actionSaveStyle">
+   <property name="text">
+    <string>Save style</string>
+   </property>
+  </action>
+  <action name="actionLoad_style">
+   <property name="text">
+    <string>Load style</string>
    </property>
   </action>
  </widget>

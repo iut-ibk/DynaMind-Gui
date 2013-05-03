@@ -28,6 +28,8 @@ public slots:
     void on_actionAdd_Layer_triggered();
     void on_actionEdit_Styles_triggered();
     void on_actionSave_to_picture_triggered();
+    void on_actionSaveStyle_triggered();
+    void on_actionLoad_style_triggered();
 
     void addNewLayer(QString name);
     void addNewStyle(QString layername, QString nameOfStyle);

@@ -4,6 +4,7 @@
 
 //QT
 #include <QWidget>
+#include <QMap>
 
 
 struct style_struct {
@@ -24,6 +25,7 @@ namespace DM {
 
 namespace mapnik {
     class Map;
+    class layer;
 }
 namespace Ui {
 class GUIMapnikView;
@@ -37,19 +39,22 @@ class GUIMapnikView : public QWidget
     
 public:
     explicit GUIMapnikView( QWidget *parent = 0, DM::System * sys=0);
+    QString getFilterForStyle(QString style);
     ~GUIMapnikView();
 
+    void addDefaultLayer(mapnik::layer &lyr, QString dm_layer);
 public slots:
     void init_mapnik();
     void drawMap();
     void setSystem(DM::System * sys);
-    void addLayer(QString dm_layer);
+    void addLayer(QString dm_layer, bool withdefault = true);
     void editStyleDefintionGUI(QString layer);
     void removeStyleDefinition(QString layer_name, QString stylename);
     void addNewStyle(style_struct ss);
     void saveToPicture(unsigned width, unsigned height, QString filename);
     void increaseZoomLevel(double factor);
     void decreaseZoomLevel(double factor);
+    std::string save_style_to_file();
 
 
 private:
@@ -57,14 +62,21 @@ private:
     QPixmap pix_;
     mapnik::Map * map_;
     DM::System * sys_;
+
+    //Workaround for Qt moc and boost error
     mapnik_private * d;
     double zoom_level;
     QPoint pan;
 
     QPoint startPos;
 
+
+    //Rules are evaluated when created, therefore can't the original rule string gets lost -> bad when saving so stoared in map
+    QMap<QString, style_struct> styles_structs;
+
     /** return index of layer, if not found return value is -1*/
     int getLayerIndex(std::string layer_name);
+
 
 protected:
     void paintEvent(QPaintEvent* ev);

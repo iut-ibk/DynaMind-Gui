@@ -51,6 +51,10 @@ public:
     // mandatory: return the layer descriptor
     mapnik::layer_descriptor get_descriptor() const;
 
+    std::string getSourceType() {return this->source_type;}
+    std::string getViewName() {return this->view_name;}
+    std::string getViewType() {return this->view_type;}
+
 private:
     // recommended - do intialization in a so-named init function
     // to reduce code in constructor
@@ -62,6 +66,12 @@ private:
     mapnik::box2d<double> extent_;
     DM::System * sys;
     DM::View view;
+
+    std::string source_type;
+    std::string view_name;
+    std::string view_type;
+
+
 
 
 };
