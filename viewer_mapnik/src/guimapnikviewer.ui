@@ -58,14 +58,14 @@
    <property name="minimumSize">
     <size>
      <width>250</width>
-     <height>128</height>
+     <height>216</height>
     </size>
    </property>
    <attribute name="dockWidgetArea">
     <number>1</number>
    </attribute>
    <widget class="QWidget" name="dockWidgetContents">
-    <layout class="QHBoxLayout" name="horizontalLayout_2">
+    <layout class="QVBoxLayout" name="verticalLayout">
      <item>
       <widget class="QTreeWidget" name="treeWidget">
        <property name="sizePolicy">
@@ -95,6 +95,9 @@
         </property>
        </column>
       </widget>
+     </item>
+     <item>
+      <widget class="QListWidget" name="listWidget_systems"/>
      </item>
     </layout>
    </widget>

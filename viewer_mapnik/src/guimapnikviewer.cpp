@@ -6,6 +6,8 @@
 #include "guisavefiletopng.h"
 #include "mapnikstylereader.h"
 
+#include <sstream>
+
 #include <QFileDialog>
 
 #include "dmsystem.h"
@@ -23,6 +25,11 @@ GUIMapnikViewer::GUIMapnikViewer(QWidget *parent, DM::System * sys) :
     connect(ui->widget_mapnik, SIGNAL(new_layer_added(QString)), this, SLOT(addNewLayer(QString)));
     connect(ui->widget_mapnik, SIGNAL(new_style_added(QString,QString)), this, SLOT(addNewStyle(QString,QString)));
     connect(ui->widget_mapnik, SIGNAL(removedStyle(QString,QString)), this, SLOT(removeStyle(QString,QString)));
+
+
+    connect(this, SIGNAL(changedSystem(DM::System*)), ui->widget_mapnik, SLOT(changeSystem(DM::System*)));
+
+    this->updatePredecessors();
 }
 
 GUIMapnikViewer::~GUIMapnikViewer()
@@ -72,18 +79,28 @@ void GUIMapnikViewer::on_actionSaveStyle_triggered()
 
 void GUIMapnikViewer::on_actionLoad_style_triggered()
 {
-
-
     QString fileName = QFileDialog::getOpenFileName(this,
                                                     tr("Open Style File"), "", tr("Style Files (*.sty)"));
 
     if (fileName.isEmpty())
         return;
 
-
     MapnikStyleReader mr(fileName, this->ui->widget_mapnik);
 }
 
+void GUIMapnikViewer::on_listWidget_systems_itemActivated(QListWidgetItem * item)
+{
+
+    SystemListWidget * sys_w = (SystemListWidget * ) item;
+    emit changedSystem(sys_w->getSystem());
+}
+
+void GUIMapnikViewer::on_listWidget_systems_itemSelectionChanged()
+{
+
+    SystemListWidget * sys_w = (SystemListWidget * ) ui->listWidget_systems->item( ui->listWidget_systems->currentRow());
+    emit changedSystem(sys_w->getSystem());
+}
 
 void GUIMapnikViewer::addNewLayer(QString name)
 {
@@ -111,4 +128,20 @@ void GUIMapnikViewer::removeStyle(QString layername, QString nameOfStyle)
     }
 
     if (item_delete) delete item_delete;
+}
+
+void GUIMapnikViewer::updatePredecessors()
+{
+    DM::System * next = sys;
+    DM::Logger(DM::Debug) << "Predecessor Systems " << sys->getPredecessors().size();
+    while (next->getPredecessors().size()) {
+        std::stringstream ss;
+        ss << next << "->";
+
+        ui->listWidget_systems->addItem(new SystemListWidget("test", next));
+        next = next->getPredecessors()[0];
+        ss <<  next;
+        DM::Logger(DM::Debug) << "get " << ss.str();
+        DM::Logger(DM::Debug) << "Predecessor Systems " << next->getPredecessors().size();
+    }
 }
