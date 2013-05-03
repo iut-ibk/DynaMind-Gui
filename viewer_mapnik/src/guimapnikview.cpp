@@ -384,6 +384,33 @@ void GUIMapnikView::decreaseZoomLevel(double factor)
     update();
 }
 
+void GUIMapnikView::changeSystem(DM::System *sys)
+{
+    int counter_l = map_->layer_count();
+
+    std::vector<layer> new_layer;
+    for (int i = 0; i < counter_l; i++) {
+        parameters p;
+        layer lyr(map_->getLayer(i));
+        p["type"]="dm";
+        p["view_name"] = lyr.name();
+        p["view_type"] = this->sys_->getViewDefinition(lyr.name())->getType();
+
+        boost::shared_ptr<SystemMapnikWrapper> ds(new SystemMapnikWrapper(p, true, sys));
+        DM::Logger(DM::Debug) << "Changed Source";
+        lyr.set_datasource(ds);
+        new_layer.push_back(lyr);
+    }
+
+    for (int i = counter_l; i > 0; i--)  map_->removeLayer(i-1);
+
+    for (int i = 0; i < counter_l; i++) map_->addLayer(new_layer[i]);
+
+    this->drawMap();
+    update();
+
+}
+
 std::string GUIMapnikView::save_style_to_file()
 {
 

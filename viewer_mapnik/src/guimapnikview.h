@@ -54,6 +54,7 @@ public slots:
     void saveToPicture(unsigned width, unsigned height, QString filename);
     void increaseZoomLevel(double factor);
     void decreaseZoomLevel(double factor);
+    void changeSystem(DM::System * sys);
     std::string save_style_to_file();
 
 

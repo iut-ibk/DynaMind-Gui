@@ -2,6 +2,15 @@
 #define GUIMAPNIKVIEWER_H
 
 #include <QMainWindow>
+#include <QListWidgetItem>
+
+class SystemListWidget : public  QListWidgetItem {
+private:
+    DM::System * sys;
+public:
+    DM::System * getSystem() {return this->sys;}
+    SystemListWidget(QString t, DM::System * sys): QListWidgetItem(t), sys(sys) {}
+};
 
 namespace DM {
     class System;
@@ -31,9 +40,16 @@ public slots:
     void on_actionSaveStyle_triggered();
     void on_actionLoad_style_triggered();
 
+    void on_listWidget_systems_itemActivated(QListWidgetItem * item);
+    void on_listWidget_systems_itemSelectionChanged();
+
     void addNewLayer(QString name);
     void addNewStyle(QString layername, QString nameOfStyle);
     void removeStyle(QString layername, QString nameOfStyle);
+    void updatePredecessors();
+
+signals:
+    void changedSystem(DM::System * sys);
 
 };
 
