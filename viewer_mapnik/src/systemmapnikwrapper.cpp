@@ -56,13 +56,7 @@ void SystemMapnikWrapper::init(mapnik::parameters const& params)
     double y2;
 
     TBVectorData::GetViewExtend(sys, view, x1, y1, x2, y2);
-
-
-
     extent_.init(x1,y1,x2,y2);
-
-
-
 }
 
 SystemMapnikWrapper::~SystemMapnikWrapper() { }
