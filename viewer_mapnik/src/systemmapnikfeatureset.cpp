@@ -20,6 +20,11 @@ SystemMapnikFeatureset::SystemMapnikFeatureset(mapnik::box2d<double> const& box,
     feature_uuids = sys->getUUIDs(view);
 
     //Get View embended in the system
+    DM::View * vptr = sys->getViewDefinition(v.getName());
+    if (!vptr) {
+        DM::Logger(DM::Warning) << "View doesn't exist yet";
+        return;
+    }
     DM::Component * cmp = sys->getViewDefinition(v.getName())->getDummyComponent();
     std::map<std::string, DM::Attribute*> attrs_map =  cmp->getAllAttributes();
 
