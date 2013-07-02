@@ -184,6 +184,7 @@ GroupNode::GroupNode(  DM::Module *module, GUISimulation * s): ModelNode( module
     this->x2 = 0;
     this->y2 = 0;
     this->UUID = module->getUuid();
+    this->VIBeModuleUUID = module->getUuid();
     this->rg = 0;
 
 
@@ -245,6 +246,10 @@ void GroupNode::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
         }
         if (h< 65)
             h = 65;
+        if (!this->getDMModel()) {
+            DM::Logger(DM::Warning) << "module doesn't exist anymore";
+            return;
+        }
         this->simpleTextItem->setText("Name:"+ QString::fromStdString(this->getDMModel()->getName())+" " +QString::number(this->zValue()));
         float lold = l;
         if (simpleTextItem->boundingRect().width()+40 > l)
