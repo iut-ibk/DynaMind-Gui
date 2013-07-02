@@ -52,9 +52,9 @@ GUIMapnikView::GUIMapnikView(QWidget *parent, DM::System * sys) :
 {
     ui->setupUi(this);
 
-    std::string mapnik_dir("/usr/local/Cellar/mapnik/2.1.0/lib");
-    DM::Logger(DM::Debug) << " looking for 'shape.input' plugin in... " << mapnik_dir << "/mapnik/input/";
-    datasource_cache::instance()->register_datasources(mapnik_dir + "/mapnik/input/");
+    std::string mapnik_dir("/usr/local/Cellar/mapnik/2.2.0/lib");
+    //DM::Logger(DM::Debug) << " looking for 'shape.input' plugin in... " << mapnik_dir << "/mapnik/input/";
+    //datasource_cache::instance().register_datasource(mapnik_dir + "/mapnik/input/");
     DM::Logger(DM::Debug) << " looking for DejaVuSans font in... " << mapnik_dir << "/mapnik/fonts/DejaVuSans.ttf";
     freetype_engine::register_font(mapnik_dir + "/mapnik/fonts/DejaVuSans.ttf");
 
@@ -187,22 +187,23 @@ void GUIMapnikView::addDefaultLayer(layer & lyr, QString dm_layer)
 {
     //Default symbolizer Edge
     feature_type_style edges_style;
-    rule edge_rule_on;
+    rule edge_rule_on("");
     edge_rule_on.append(stroke(color(0, 0, 0), 1));
     edges_style.add_rule(edge_rule_on);
     map_->insert_style("default_edge",edges_style);
-
+    lyr.add_style("default_edge");
     emit new_style_added(dm_layer, "default_edge");
 
     //Default symbolizer Polygon
+
     feature_type_style polygon_style;
-    rule polygon_rule_on;
+    rule polygon_rule_on("");
     polygon_rule_on.append(polygon_symbolizer(color(211, 211, 211)));
     polygon_style.add_rule(polygon_rule_on);
     map_->insert_style("default_face",polygon_style);
     emit new_style_added(dm_layer, "default_face");
 
-    lyr.add_style("default_edge");
+
     lyr.add_style("default_face");
 }
 
@@ -302,7 +303,7 @@ void GUIMapnikView::addNewStyle(style_struct ss)
 {
     try {
         feature_type_style new_style;
-        rule new_rule_on;
+        rule new_rule_on("");
         if (ss.symbolizer == "PolygonSymbolizer") {
             new_rule_on.append(polygon_symbolizer(color(ss.color.red(), ss.color.green(), ss.color.blue())));
         }
@@ -315,9 +316,11 @@ void GUIMapnikView::addNewStyle(style_struct ss)
         if (!ss.filter.isEmpty()) new_rule_on.set_filter(parse_expression(ss.filter.toStdString()));
 
         new_style.add_rule(new_rule_on);
-        new_style.set_opacity(ss.opacity);
+        //new_style.set_opacity(ss.opacity);
 
-        map_->insert_style(ss.name.toStdString(),new_style);
+        bool added_style = map_->insert_style(ss.name.toStdString(),new_style);
+
+        if (!added_style) std::cout << "Error" << std::endl;
 
         //update layer;
 

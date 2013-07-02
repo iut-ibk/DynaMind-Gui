@@ -39,7 +39,7 @@ public:
 
     // mandatory: function to query features by point (coord2d)
     // not used by rendering, but available to calling applications
-    mapnik::featureset_ptr features_at_point(const mapnik::coord2d &pt) const;
+    mapnik::featureset_ptr features_at_point(const mapnik::coord2d &pt,  double tol = 0) const;
 
     // mandatory: return the box2d of the datasource
     // called during rendering to determine if the layer should be processed
@@ -50,6 +50,7 @@ public:
 
     // mandatory: return the layer descriptor
     mapnik::layer_descriptor get_descriptor() const;
+
 
     std::string getSourceType() {return this->source_type;}
     std::string getViewName() {return this->view_name;}

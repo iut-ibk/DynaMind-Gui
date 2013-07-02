@@ -87,6 +87,7 @@ mapnik::layer_descriptor SystemMapnikWrapper::get_descriptor() const
     return desc_;
 }
 
+
 mapnik::featureset_ptr SystemMapnikWrapper::features(mapnik::query const& q) const
 {
     // if the query box intersects our world extent then query for features
@@ -99,7 +100,7 @@ mapnik::featureset_ptr SystemMapnikWrapper::features(mapnik::query const& q) con
     return mapnik::featureset_ptr();
 }
 
-mapnik::featureset_ptr SystemMapnikWrapper::features_at_point(mapnik::coord2d const& pt) const
+mapnik::featureset_ptr SystemMapnikWrapper::features_at_point(mapnik::coord2d const& pt,  double tol) const
 {
     // features_at_point is rarely used - only by custom applications,
     // so for this sample plugin let's do nothing...
