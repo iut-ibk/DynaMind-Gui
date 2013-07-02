@@ -226,6 +226,9 @@ void GUIPort::mousePressEvent ( QGraphicsSceneMouseEvent * event )  {
 }
 DM::Port * GUIPort::getVIBePort() {
     DM::Port * p = 0;
+    if (!this->modelNode->getDMModel()) {
+        return 0;
+    }
     if (this->PortType > DM::OUTPORTS) {
         p = this->modelNode->getDMModel()->getInPort(this->getPortName().toStdString());
     } else {
