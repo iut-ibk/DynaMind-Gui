@@ -185,6 +185,25 @@ void GUIMapnikView::setSystem(DM::System * sys)
 
 void GUIMapnikView::addDefaultLayer(layer & lyr, QString dm_layer)
 {
+    if (this->sys_->getViewDefinition(dm_layer.toStdString())->getType()  == DM::NODE) {
+
+        //Default symbolizer Edge
+        feature_type_style node_style;
+        rule node_style_on("");
+
+        markers_symbolizer ms;
+        ms.set_fill(color(0, 0, 0));
+        ms.set_width(parse_expression("4"));
+        ms.set_height(parse_expression("4"));
+
+        node_style_on.append(ms);
+        node_style.add_rule(node_style_on);
+        map_->insert_style("default_node",node_style);
+        lyr.add_style("default_node");
+        emit new_style_added(dm_layer, "default_node");
+        return;
+    }
+
     //Default symbolizer Edge
     feature_type_style edges_style;
     rule edge_rule_on("");
@@ -194,17 +213,18 @@ void GUIMapnikView::addDefaultLayer(layer & lyr, QString dm_layer)
     lyr.add_style("default_edge");
     emit new_style_added(dm_layer, "default_edge");
 
-    //Default symbolizer Polygon
+    if (this->sys_->getViewDefinition(dm_layer.toStdString())->getType()  == DM::EDGE) return;
 
+    //Default symbolizer Polygon
     feature_type_style polygon_style;
     rule polygon_rule_on("");
     polygon_rule_on.append(polygon_symbolizer(color(211, 211, 211)));
     polygon_style.add_rule(polygon_rule_on);
     map_->insert_style("default_face",polygon_style);
     emit new_style_added(dm_layer, "default_face");
-
-
     lyr.add_style("default_face");
+
+
 }
 
 void GUIMapnikView::addLayer(QString dm_layer, bool withdefault)
@@ -306,6 +326,14 @@ void GUIMapnikView::addNewStyle(style_struct ss)
     try {
         feature_type_style new_style;
         rule new_rule_on("");
+        if (ss.symbolizer == "MarkerSymbolizer") {
+            markers_symbolizer ms;
+            ms.set_fill(color(ss.color.red(), ss.color.green(), ss.color.blue()));
+
+            ms.set_width(parse_expression(QString::number(ss.linewidth).toStdString()));
+            ms.set_height(parse_expression(QString::number(ss.linewidth).toStdString()));
+            new_rule_on.append(ms);
+        }
         if (ss.symbolizer == "PolygonSymbolizer") {
             new_rule_on.append(polygon_symbolizer(color(ss.color.red(), ss.color.green(), ss.color.blue())));
         }
@@ -431,9 +459,9 @@ std::string GUIMapnikView::save_style_to_file()
         if (!bg) {
             out << "background-color=\""
                 << "rgb("
-                << (*bg).red() << ","
-                << (*bg).green() << ","
-                << (*bg).blue() << ")\" ";
+                << static_cast<unsigned int>((*bg).red()) << ","
+                << static_cast<unsigned int>((*bg).green()) << ","
+                << static_cast<unsigned int>((*bg).blue()) << ")\" ";
         }
         out << "srs=\""
             << map_->srs()
@@ -457,14 +485,28 @@ std::string GUIMapnikView::save_style_to_file()
             out  << "<Rule>\n";
             foreach (symbolizer s, r.get_symbolizers()) {
                 out << "\t\t\t";
+                if  ((s.type())  == typeid(markers_symbolizer))  {
+                    markers_symbolizer ms (boost::get<markers_symbolizer>(s));
+                    color c = ms.get_fill().get();
+                    out << "<MarkerSymbolizer fill=\"";
+                    out << "rgb("
+                        << static_cast<unsigned int>(c.red()) << ","
+                        << static_cast<unsigned int>(c.green()) << ","
+                        << static_cast<unsigned int>(c.blue()) << ")\" ";
+                    out << "fill-width=\""
+                        << this->styles_structs[QString::fromStdString(it->first)].linewidth << "\" ";
+                    out << "fill-height=\""
+                        << this->styles_structs[QString::fromStdString(it->first)].linewidth;
+                    out << "\"/>\n";
+                }
                 if  ((s.type())  == typeid(line_symbolizer))  {
                     line_symbolizer ls (boost::get<line_symbolizer>(s));
                     color c = ls.get_stroke().get_color();
                     out << "<LineSymbolizer stroke=\"";
                     out << "rgb("
-                        << c.red() << ","
-                        << c.green() << ","
-                        << c.blue() << ")\" ";
+                        << static_cast<unsigned int>(c.red()) << ","
+                        << static_cast<unsigned int>(c.green()) << ","
+                        << static_cast<unsigned int>(c.blue()) << ")\" ";
                     out << "stroke-width=\""
                         << ls.get_stroke().get_width();
                     out << "\"/>\n";
@@ -474,9 +516,9 @@ std::string GUIMapnikView::save_style_to_file()
                     color c = ps.get_fill();
                     out << "<PolygonSymbolizer fill=\"";
                     out << "rgb("
-                        << c.red() << ","
-                        << c.green() << ","
-                        << c.blue() << ")\""
+                        << static_cast<unsigned int>(c.red())  << ","
+                        << static_cast<unsigned int>(c.green())  << ","
+                        << static_cast<unsigned int>(c.blue())  << ")\""
                         << "/>\n";
                 }
                 if  ((s.type())  == typeid(building_symbolizer))  {
