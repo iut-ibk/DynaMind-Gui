@@ -26,7 +26,7 @@ void SystemMapnikWrapper::init(mapnik::parameters const& params)
 
     this->source_type = *params.get<std::string>("type");
     this->view_name = *params.get<std::string>("view_name");
-    this->view_type = *params.get<std::string>("view_type");
+    this->view_type = atoi( (*params.get<std::string>("view_type")).c_str() );
 
     // every datasource must have some way of reporting its extent
     // in this case we are not actually reading from any data so for fun
@@ -34,20 +34,9 @@ void SystemMapnikWrapper::init(mapnik::parameters const& params)
     // '+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs' (equivalent to +init=epsg:4326)
     // see http://spatialreference.org/ref/epsg/4326/ for more details
 
-
-    //Calculate Extend
-    std::map<std::string, DM::Node*> nodes_map = sys->getAllNodes();
-
-    std::vector<DM::Node*> nodes;
-    for (std::map<std::string, DM::Node*>::const_iterator it = nodes_map.begin(); it != nodes_map.end(); ++it)
-        nodes.push_back(it->second);
-
-    if (!nodes.size()) {
-        extent_.init(-180,-90,180,90);
-        return;
-    }
     std::string view_name = *params.get<std::string>("view_name");
-    int view_type = *params.get<int>("view_type");
+    int view_type = atoi( (*params.get<std::string>("view_type")).c_str() );
+
     this->view = DM::View(view_name,view_type, DM::READ);
 
     double x1;
@@ -56,7 +45,14 @@ void SystemMapnikWrapper::init(mapnik::parameters const& params)
     double y2;
 
     TBVectorData::GetViewExtend(sys, view, x1, y1, x2, y2);
+
+    if (x1==x2 || y1==y2){
+        extent_.init(-180,-90,180,90);
+        return;
+    }
+
     extent_.init(x1,y1,x2,y2);
+
 }
 
 SystemMapnikWrapper::~SystemMapnikWrapper() { }

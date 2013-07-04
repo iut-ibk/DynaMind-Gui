@@ -56,6 +56,11 @@ mapnik::feature_ptr SystemMapnikFeatureset::next()
 
         DM::Component * cmp = 0;
 
+        if (!sys->getComponent(uuid)) {
+            DM::Logger(DM::Warning) << "Component doesn t exist";
+            return mapnik::feature_ptr();
+        }
+
         switch (view.getType()) {
         case DM::FACE:
             cmp = (DM::Component *)  sys->getFace(uuid);
