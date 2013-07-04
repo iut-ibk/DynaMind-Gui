@@ -11,7 +11,8 @@ GUIRuleDefinition::GUIRuleDefinition(QStringList attribute_list, QWidget *parent
 
 
     QStringList symbolizer;
-    symbolizer << "LineSymbolizer"
+    symbolizer << "MarkerSymbolizer"
+               << "LineSymbolizer"
                << "PolygonSymbolizer"
                << "BuildingSymbolizer";
 

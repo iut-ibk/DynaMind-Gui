@@ -33,6 +33,7 @@ private:
     DM::View view;
     void draw_faces(DM::Face *f,  mapnik::feature_ptr feature);
     void draw_edges(DM::Edge *e,  mapnik::feature_ptr feature);
+    void draw_node(DM::Node *n,  mapnik::feature_ptr feature);
     void add_attribute(DM::Component * cmp,  mapnik::feature_ptr feature);
 
     std::vector<std::string> attribute_list;

@@ -26,7 +26,7 @@ void SystemMapnikWrapper::init(mapnik::parameters const& params)
 
     this->source_type = *params.get<std::string>("type");
     this->view_name = *params.get<std::string>("view_name");
-    this->view_type = atoi( (*params.get<std::string>("view_type")).c_str() );
+    this->view_type = *params.get<std::string>("view_type");
 
     // every datasource must have some way of reporting its extent
     // in this case we are not actually reading from any data so for fun

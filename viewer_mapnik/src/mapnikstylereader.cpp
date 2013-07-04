@@ -44,6 +44,22 @@ bool MapnikStyleReader::startElement(const QString &namespaceURI, const QString 
         return true;
     }
 
+    if (qName == "MarkerSymbolizer") {
+        current_style.symbolizer =  "MarkerSymbolizer";
+        if (atts.index("fill") >= 0) {
+            DM::Logger(DM::Debug) <<  atts.value("fill").toStdString();
+            QString color_string = atts.value("fill");
+            color_string.replace("rgb(", "");
+            color_string.replace(")", "");
+            QStringList color_list = color_string.split(",", QString::SkipEmptyParts);
+            DM::Logger(DM::Debug) << color_string.toStdString();
+            current_style.color = QColor(color_list[0].toInt(),color_list[1].toInt(),color_list[2].toInt());
+            current_style.linewidth = atts.value("fill-width").toDouble();
+
+        }
+        return true;
+    }
+
     if (qName == "LineSymbolizer") {
         current_style.symbolizer = "LineSymbolizer";
         if (atts.index("stroke") >= 0) {

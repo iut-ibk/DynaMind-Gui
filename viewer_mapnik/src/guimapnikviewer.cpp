@@ -72,6 +72,7 @@ void GUIMapnikViewer::on_actionSaveStyle_triggered()
     QFile file(fileName);
     file.open(QIODevice::WriteOnly | QIODevice::Text);
     QTextStream out(&file);
+    DM::Logger(DM::Debug)  << ui->widget_mapnik->save_style_to_file();
     out << QString::fromStdString(ui->widget_mapnik->save_style_to_file());
     file.close();
 

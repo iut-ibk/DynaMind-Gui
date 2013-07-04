@@ -62,6 +62,10 @@ mapnik::feature_ptr SystemMapnikFeatureset::next()
         }
 
         switch (view.getType()) {
+        case DM::NODE:
+            cmp = (DM::Component *)  sys->getNode(uuid);
+            draw_node( (DM::Node*) cmp, feature);
+            break;
         case DM::FACE:
             cmp = (DM::Component *)  sys->getFace(uuid);
             draw_faces( (DM::Face*) cmp, feature);
@@ -99,6 +103,14 @@ void SystemMapnikFeatureset::draw_edges(DM::Edge *e, mapnik::feature_ptr feature
     line->move_to(e->getStartNode()->getX(), e->getStartNode()->getY());
     line->line_to(e->getEndNode()->getX(), e->getEndNode()->getY());
     feature->add_geometry(line);
+
+}
+
+void SystemMapnikFeatureset::draw_node(DM::Node *n, mapnik::feature_ptr feature)
+{
+    mapnik::geometry_type * node = new mapnik::geometry_type(mapnik::Point);
+    node->move_to(n->getX(), n->getY());
+    feature->add_geometry(node);
 
 }
 
