@@ -213,7 +213,9 @@ void GUIMapnikView::addLayer(QString dm_layer, bool withdefault)
         parameters p;
         p["type"]="dm";
         p["view_name"]= dm_layer.toStdString();
-        p["view_type"]= this->sys_->getViewDefinition(dm_layer.toStdString())->getType();
+        stringstream s_view_type;
+        s_view_type << this->sys_->getViewDefinition(dm_layer.toStdString())->getType();
+        p["view_type"]= s_view_type.str();
         boost::shared_ptr<SystemMapnikWrapper> ds(new SystemMapnikWrapper(p, true, sys_));
 
         emit new_layer_added(dm_layer);
@@ -397,10 +399,12 @@ void GUIMapnikView::changeSystem(DM::System *sys)
         layer lyr(map_->getLayer(i));
         p["type"]="dm";
         p["view_name"] = lyr.name();
-        p["view_type"] = this->sys_->getViewDefinition(lyr.name())->getType();
-
+        //Bug fix int was causing a ugly carsh
+        stringstream s_view_type;
+        s_view_type << this->sys_->getViewDefinition(lyr.name())->getType();
+        p["view_type"]= s_view_type.str();
         boost::shared_ptr<SystemMapnikWrapper> ds(new SystemMapnikWrapper(p, true, sys));
-        DM::Logger(DM::Debug) << "Changed Source";
+
         lyr.set_datasource(ds);
         new_layer.push_back(lyr);
     }
@@ -411,6 +415,7 @@ void GUIMapnikView::changeSystem(DM::System *sys)
 
     this->drawMap();
     update();
+
 
 }
 
