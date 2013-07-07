@@ -5,6 +5,9 @@
 #include <dmsystem.h>
 #include <dm.h>
 
+#include <systemmapnikfeatureset.h>
+#include <rastermapnikfeatureset.h>
+
 using mapnik::datasource;
 using mapnik::parameters;
 
@@ -65,6 +68,8 @@ const char * SystemMapnikWrapper::name()
 
 mapnik::datasource::datasource_t SystemMapnikWrapper::type() const
 {
+    if (this->view.getType() == DM::RASTERDATA)  return datasource::Raster;
+
     return datasource::Vector;
 }
 
@@ -89,6 +94,7 @@ mapnik::featureset_ptr SystemMapnikWrapper::features(mapnik::query const& q) con
     // if the query box intersects our world extent then query for features
     if (extent_.intersects(q.get_bbox()))
     {
+        if (this->view.getType() == DM::RASTERDATA) return boost::make_shared<RasterMapnikFeatureset>(q.get_bbox(),desc_.get_encoding(), sys, this->view);
         return boost::make_shared<SystemMapnikFeatureset>(q.get_bbox(),desc_.get_encoding(), sys, this->view);
     }
 
