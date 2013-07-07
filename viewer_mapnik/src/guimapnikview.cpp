@@ -9,9 +9,9 @@
 #include <QMouseEvent>
 
 //DM
-#include "dmlogger.h"
-#include "systemmapnikwrapper.h"
+#include <dmlogger.h>
 #include <systemmapnikwrapper.h>
+#include <dmrasterdata.h>
 
 //Mapnik
 #include <mapnik/map.hpp>
@@ -31,6 +31,7 @@
 #include <mapnik/image_util.hpp>
 #include <mapnik/config_error.hpp>
 #include <mapnik/load_map.hpp>
+#include <mapnik/raster_colorizer.hpp>
 
 #include "guistyledefinition.h"
 
@@ -185,6 +186,50 @@ void GUIMapnikView::setSystem(DM::System * sys)
 
 void GUIMapnikView::addDefaultLayer(layer & lyr, QString dm_layer)
 {
+    DM::View * view = this->sys_->getViewDefinition(dm_layer.toStdString());
+    if (view->getType()  == DM::RASTERDATA) {
+        float val_max;
+        float val_min;
+        std::map<std::string, DM::Component*> components = this->sys_->getAllComponentsInView(*view);
+        mforeach(DM::Component* c, components) {
+            if(c->getType() == DM::RASTERDATA) {
+                DM::RasterData * rdata = (DM::RasterData*)c;
+                val_min = rdata->getMinValue();
+                val_max = rdata->getMaxValue();
+            }
+        }
+
+        //Default symbolizer Edge
+        feature_type_style raster_style;
+        rule raster_style_on("");
+
+        raster_symbolizer rs;
+        raster_colorizer_ptr rc =   boost::make_shared<raster_colorizer>(COLORIZER_LINEAR);
+        //rc->set_default_color(color(0,0,0));
+        colorizer_stop cs1(val_min,COLORIZER_LINEAR,color(0,255,0) );
+        colorizer_stop cs2(val_max,COLORIZER_LINEAR,color(0,0,255) );
+        bool added_r1 = rc->add_stop(cs1);
+        bool added_r2 =  rc->add_stop(cs2);
+        rs.set_colorizer(rc);
+
+        if (!added_r1) DM::Logger(DM::Error) << "Failed R1";
+        if (!added_r2) DM::Logger(DM::Error) << "Failed R2";
+
+        raster_style_on.append(rs);
+        raster_style.add_rule(raster_style_on);
+        map_->insert_style("default_raster",raster_style);
+        lyr.add_style("default_raster");
+        emit new_style_added(dm_layer, "default_raster");
+
+        DM::Logger(DM::Debug) << rc->get_color(0).red() << "/t" << rc->get_color(0).green() << "/t" << rc->get_color(0).blue();
+        DM::Logger(DM::Debug) << rc->get_color(50).red() << "/t" << rc->get_color(50).green() << "/t" << rc->get_color(50).blue();
+        DM::Logger(DM::Debug) << rc->get_color(99).red() << "/t" << rc->get_color(99).green() << "/t" << rc->get_color(99).blue();
+        DM::Logger(DM::Debug) << rc->get_color(100).red() << "/t" << rc->get_color(100).green() << "/t" << rc->get_color(100).blue();
+
+
+        return;
+    }
+
     if (this->sys_->getViewDefinition(dm_layer.toStdString())->getType()  == DM::NODE) {
 
         //Default symbolizer Edge

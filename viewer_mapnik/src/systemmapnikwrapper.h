@@ -12,7 +12,6 @@
 #include <mapnik/coord.hpp>
 #include <mapnik/feature_layer_desc.hpp>
 
-#include "systemmapnikfeatureset.h"
 
 // boost
 #include <boost/optional.hpp>
