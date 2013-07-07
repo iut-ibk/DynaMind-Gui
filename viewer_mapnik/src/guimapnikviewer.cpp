@@ -46,6 +46,11 @@ void GUIMapnikViewer::on_actionAdd_Layer_triggered()
 
 void GUIMapnikViewer::on_actionEdit_Styles_triggered()
 {
+    if(ui->treeWidget->currentItem() == 0){
+        DM::Logger(DM::Error) << "No maps to edit";
+        return;
+    }
+
     QString layer (ui->treeWidget->currentItem()->text(0));
     ui->widget_mapnik->editStyleDefintionGUI(layer);
 
