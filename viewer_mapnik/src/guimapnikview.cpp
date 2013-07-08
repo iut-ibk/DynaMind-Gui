@@ -206,14 +206,13 @@ void GUIMapnikView::addDefaultLayer(layer & lyr, QString dm_layer)
         raster_symbolizer rs;
         raster_colorizer_ptr rc =   boost::make_shared<raster_colorizer>(COLORIZER_LINEAR);
         //rc->set_default_color(color(0,0,0));
-        colorizer_stop cs1(val_min,COLORIZER_LINEAR,color(0,255,0) );
-        colorizer_stop cs2(val_max,COLORIZER_LINEAR,color(0,0,255) );
-        bool added_r1 = rc->add_stop(cs1);
-        bool added_r2 =  rc->add_stop(cs2);
+        colorizer_stop cs1(val_min,COLORIZER_LINEAR,color(0,0,255) );
+        colorizer_stop cs2((val_max - val_min)/2. + val_min,COLORIZER_LINEAR,color(0,255,0) );
+        colorizer_stop cs3(val_max,COLORIZER_LINEAR,color(255,0,0) );
+        rc->add_stop(cs1);
+        rc->add_stop(cs2);
+        rc->add_stop(cs3);
         rs.set_colorizer(rc);
-
-        if (!added_r1) DM::Logger(DM::Error) << "Failed R1";
-        if (!added_r2) DM::Logger(DM::Error) << "Failed R2";
 
         raster_style_on.append(rs);
         raster_style.add_rule(raster_style_on);
@@ -221,10 +220,8 @@ void GUIMapnikView::addDefaultLayer(layer & lyr, QString dm_layer)
         lyr.add_style("default_raster");
         emit new_style_added(dm_layer, "default_raster");
 
-        DM::Logger(DM::Debug) << rc->get_color(0).red() << "/t" << rc->get_color(0).green() << "/t" << rc->get_color(0).blue();
-        DM::Logger(DM::Debug) << rc->get_color(50).red() << "/t" << rc->get_color(50).green() << "/t" << rc->get_color(50).blue();
-        DM::Logger(DM::Debug) << rc->get_color(99).red() << "/t" << rc->get_color(99).green() << "/t" << rc->get_color(99).blue();
-        DM::Logger(DM::Debug) << rc->get_color(100).red() << "/t" << rc->get_color(100).green() << "/t" << rc->get_color(100).blue();
+        DM::Logger(DM::Debug) <<  val_min << "\t"<< rc->get_color(val_min).red() << "\t" << rc->get_color(val_min).green() << "\t" << rc->get_color(val_min).blue();
+        DM::Logger(DM::Debug) <<  val_max << "\t"<< rc->get_color(val_max).red() << "\t" << rc->get_color(val_max).green() << "\t" << rc->get_color(val_max).blue();
 
 
         return;
