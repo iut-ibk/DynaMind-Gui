@@ -86,14 +86,25 @@ mapnik::feature_ptr SystemMapnikFeatureset::next()
 
 void SystemMapnikFeatureset::draw_faces(DM::Face * f, mapnik::feature_ptr feature)
 {
-    //UnicodeString value = tr_->transcode(value_str.c_str());
     std::vector<DM::Node*> nodes = f->getNodePointers();
     mapnik::geometry_type * polygon = new mapnik::geometry_type(mapnik::Polygon);
     polygon->move_to(nodes[0]->getX(), nodes[0]->getY());
-    for (int i = 1; i < nodes.size(); i++)
+    for (uint i = 1; i < nodes.size(); i++)
         polygon->line_to(nodes[i]->getX(), nodes[i]->getY());
     polygon->line_to(nodes[0]->getX(), nodes[0]->getY());
+    polygon->close_path();
+
+    foreach (DM::Face * f,  f->getHolePointers()) {
+        nodes = f->getNodePointers();
+        polygon->move_to(nodes[0]->getX(), nodes[0]->getY());
+        for (uint i = 1; i < nodes.size(); i++)
+            polygon->line_to(nodes[i]->getX(), nodes[i]->getY());
+        polygon->line_to(nodes[0]->getX(), nodes[0]->getY());
+        polygon->close_path();
+    }
+
     feature->add_geometry(polygon);
+
 }
 
 
