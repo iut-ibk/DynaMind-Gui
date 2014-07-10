@@ -344,7 +344,7 @@ void ModelNode::viewOutportData(QString portName)
 	std::map<std::string, std::map<std::string, DM::View> > stream = module->getViewsInOutStream();
 	map_contains(&stream, portName.toStdString(), views);
 
-	DM::ViewerWindow *viewer_window = new DM::ViewerWindow(	module->getOutPortData(portName.toStdString()), views);
+	DM::ViewerWindow *viewer_window = new DM::ViewerWindow((DM::System*)	module->getOutPortData(portName.toStdString()), views);
 	viewer_window->show();
 }
 
@@ -354,7 +354,7 @@ void ModelNode::viewInportData(QString portName)
 	std::map<std::string, std::map<std::string, DM::View> > stream = module->getViewsInOutStream();
 	map_contains(&stream, portName.toStdString(), views);
 
-	DM::ViewerWindow *viewer_window = new DM::ViewerWindow(	module->getInPortData(portName.toStdString()), views);
+	DM::ViewerWindow *viewer_window = new DM::ViewerWindow(	(DM::System*)module->getInPortData(portName.toStdString()), views);
 	viewer_window->show();
 }
 
